@@ -1,11 +1,21 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
+
+// Custom Phone Validator
+const validatePhone = (phone) => {
+    const phoneRegex = /^[+]?[0-9]{10,15}$/;
+    return phoneRegex.test(phone);
+};
 
 // Define the schema for OTPs
 const otpSchema = new mongoose.Schema({
-    phoneNumber: {
+    phone: {
         type: String,
         required: true,
-        unique: true,  // Ensure that OTPs are unique per email
+        validate: {
+            validator: validatePhone,
+            message: 'Invalid phone number'
+        }
     },
     otp: {
         type: String,
@@ -13,8 +23,7 @@ const otpSchema = new mongoose.Schema({
     },
     otpExpiration: {
         type: Date,
-        default:Date.now(),
-        get: (otpExpiration)=>otpExpiration.getTime(),
+        default: () => Date.now() + 15 * 60 * 1000, // Default expiration of 15 minutes
     },
 }, {
     timestamps: true,  // Automatically add createdAt and updatedAt fields

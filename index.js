@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const connectDB = require('./db/db.js');
+const connectDB = require('./utils/db.js');
 const errorHandler = require('./middleware/errorhandling.js');
 const authRoutes = require('./routes/auth.js');
 const otpRoutes = require('./routes/otp_routes.js');
@@ -55,7 +55,9 @@ app.use(express.static('public'));
 // Middleware for error handling
 app.use(errorHandler);
 
-
+app.get('/home',(req,res)=>{
+    res.send('hello world')
+})
 // Define routes
 app.use('/api/auth', authRoutes);
 app.use('/api/otp', otpRoutes);
