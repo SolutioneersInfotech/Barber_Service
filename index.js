@@ -5,9 +5,12 @@ const connectDB = require('./utils/db.js');
 const errorHandler = require('./middleware/errorhandling.js');
 const authRoutes = require('./routes/auth.js');
 const otpRoutes = require('./routes/otp_routes.js');
+const userInfo = require("./routes/Info_user_route.js")
 const cookieSession=require('cookie-session')
 const passport=require("passport")
-const session = require('express-session')
+const session = require('express-session');
+const { userInfo } = require('os');
+
 const facebookStrategy=require("passport-facebook").strategy
 
 
@@ -19,7 +22,9 @@ const app = express();
 
 // Middleware for parsing request bodies
 app.use(express.json()); // Parses incoming JSON requests
-app.use(express.urlencoded({ extended: false })); // Parses URL-encoded bodies
+app.use(express.urlencoded({ extended: true })); // Parses URL-encoded bodies
+app.use(bodyParser.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Serve static files from uploads
 
 // app.use(
 //     cookieSession({
@@ -61,6 +66,7 @@ app.get('/home',(req,res)=>{
 // Define routes
 app.use('/api/auth', authRoutes);
 app.use('/api/otp', otpRoutes);
+app.use('/api', userInfo);
 
 // Start the server
 const PORT = process.env.PORT || 3001;
