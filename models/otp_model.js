@@ -21,9 +21,9 @@ const otpSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    otpExpiration: {
+    otpExpiration: {                                       
         type: Date,
-        default: () => Date.now() + 15 * 60 * 1000, // Default expiration of 15 minutes
+        default: () => Date.now() + 15 * 60 * 1000, // Default expiration of 15 minutes .
     },
 }, {
     timestamps: true,  // Automatically add createdAt and updatedAt fields

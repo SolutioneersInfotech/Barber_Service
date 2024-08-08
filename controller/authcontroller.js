@@ -1,10 +1,9 @@
-// controllers/userController.js
-
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const FormDataModel = require('../models/FormData.js');
-const { validateEmail, validatePhoneNumber } = require('../utils/validators'); // Custom validators
-const { sendotp, verifyotp } = require('./otp_controller.js');
+const User = require('../models/Users_model');
+const Otp = require('../models/otp_model'); // Assuming this is the model for storing OTPs
+const { validateEmail, validatePhoneNumber } = require('../utils/validators');
+const { sendotp, verifyotp } = require('./otp_controller');
 
 // Home route for testing
 const home = async (req, res) => {
@@ -16,13 +15,13 @@ const home = async (req, res) => {
     }
 };
 
-// Register route with OTP verification
+// Register route logic
 const register = async (req, res) => {
-    const { email, phone, password, otp } = req.body;
+    const { firstName, lastName, email, phone, DOB, gender, address } = req.body;
 
     // Check if all fields are provided
-    if (!email || !phone || !password) {
-        return res.status(400).json({ error: 'Email, phone, password, and OTP are required' });
+    if (!firstName || !lastName || !email || !phone || !DOB || !gender || !address) {
+        return res.status(400).json({ error: 'All fields are required' });
     }
 
     // Validate email and phone number
@@ -36,7 +35,7 @@ const register = async (req, res) => {
 
     try {
         // Check if the user with the same email or phone already exists
-        const existingUser = await FormDataModel.findOne({ $or: [{ email }, { phone }] });
+        const existingUser = await User.findOne({ $or: [{ email }, { phone }] });
         if (existingUser) {
             let message = '';
             if (existingUser.email === email) {
@@ -48,33 +47,17 @@ const register = async (req, res) => {
             return res.status(400).json({ error: message.trim() });
         }
 
-        // Send OTP
-        const otpResponse = await sendotp({ phone });
-        if (!otpResponse.success) {
-            
-            return res.status(400).json({ error: otpResponse.msg });
-        }
-    
-
-        // Verify OTP
-        const otpVerification = await verifyotp({ phone });
-        if (!otpVerification.success) {
-            return res.status(400).json({ error: otpVerification.msg });
-        }
-
-        // Hash the password and save the user
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const usercreate = new FormDataModel({ email, phone, password: hashedPassword });
-
-        await usercreate.save();
+        const token = user.generateToken();
+        // Create and save the new user
+        const user = new User({ firstName, lastName, email, phone, DOB, gender, address, token });
+        await user.save();
 
         // Generate token for the user
-        const token = await usercreate.generateToken();
 
         res.status(201).json({
-            message: 'Registered successfully',
-            token,
-            userId: usercreate._id.toString(),
+            success:'true',
+            message: 'Registered',
+            data: user
         });
     } catch (error) {
         console.error('Registration error:', error);
@@ -84,16 +67,11 @@ const register = async (req, res) => {
 
 // Login route with OTP verification
 const login = async (req, res) => {
-    const { email, phone, password, otp } = req.body;
+    const { phone, otp } = req.body;
 
-    // Check if all fields are provided
-    if (!email || !phone || !password || !otp) {
-        return res.status(400).json({ error: 'Email, phone, password, and OTP are required' });
-    }
-
-    // Validate email and phone number
-    if (!validateEmail(email)) {
-        return res.status(400).json({ error: 'Invalid email format' });
+    // Check if phone is provided
+    if (!phone || !otp) {
+        return res.status(400).json({ error: 'Phone and OTP are required' });
     }
 
     if (!validatePhoneNumber(phone)) {
@@ -102,33 +80,40 @@ const login = async (req, res) => {
 
     try {
         // Verify OTP
-        const otpVerification = await verifyotp({ phone, otp });
-        if (!otpVerification.success) {
-            return res.status(400).json({ error: otpVerification.msg });
+        const otpRecord = await Otp.findOne({ phone });
+
+        if (!otpRecord) {
+            return res.status(400).json({ error: 'Phone number not found' });
         }
 
-        // Find the user by email and phone
-        const user = await FormDataModel.findOne({ email, phone });
+        const { otp: storedOtp, otpExpiration } = otpRecord;
+
+        if (storedOtp !== otp) {
+            return res.status(400).json({ error: 'Incorrect OTP' });
+        }
+
+        if (new Date() > otpExpiration) {
+            return res.status(400).json({ error: 'OTP expired' });
+        }
+
+        // Find the user by phone
+        const user = await User.findOne({ phone });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Check if the password is correct
-        const passwordMatch = await bcrypt.compare(password, user.password);
-        if (!passwordMatch) {
-            return res.status(401).json({ error: 'Invalid password' });
-        }
-
-        // Generate token for the user
-        const token = await user.generateToken();
-
         res.status(200).json({
-            message: 'Login successful',
-            token,
-            userId: user._id.toString(),
+            status:'true',
+            message: 'Login',
+            // userId: user._id.toString(),
+            data: user
         });
     } catch (error) {
         console.error('Login error:', error);
+        // res.send({
+        //      status:'false',
+        //     message: 'Login unsuccessful',
+        //     data: []} )
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
