@@ -1,6 +1,7 @@
+
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/Users_model');
+const User = require('../models/user_model');
 const Otp = require('../models/otp_model'); // Assuming this is the model for storing OTPs
 const { validateEmail, validatePhoneNumber } = require('../utils/validators');
 const { sendotp, verifyotp } = require('./otp_controller');
