@@ -1,4 +1,4 @@
-const User = require('../models/Users_model');
+const User = require('../models/User_model');
 const { validateEmail, validatePhoneNumber } = require('../utils/validators');
 
 
