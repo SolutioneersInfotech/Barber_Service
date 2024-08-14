@@ -187,7 +187,7 @@ const login = async (req, res) => {
                 const user = await User.findOne({ phone });
 
                 if (user) {
-                    // User found, log in and return token
+                  //  User found, log in and return token
                     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
                     return res.status(200).json({
                         success: true,
