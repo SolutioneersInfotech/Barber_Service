@@ -1,0 +1,3 @@
+flow of app
+
+login--->input phone-->send-otp-->verifyotp-->if phone is found-->redirect to home page else redirect to register page--->home
