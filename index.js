@@ -8,7 +8,6 @@ const otpRoutes = require('./routes/otp_routes');
 const userInfoRoutes = require('./routes/Info_user_route');
 const session = require('express-session');
 const passport = require('passport');
-// const FacebookStrategy = require('passport-facebook').Strategy;
 const path = require('path');
 
 dotenv.config();
@@ -29,21 +28,6 @@ app.use(cors({
     methods: 'GET, POST, PUT, DELETE, PATCH, HEAD',
     credentials: true,
 }));
-
-// Session and passport configuration
-// app.use(session({ secret: 'thisissecretkey', resave: false, saveUninitialized: true }));
-// app.use(passport.initialize());
-// app.use(passport.session());
-
-// passport.use(new FacebookStrategy({
-//     clientID: process.env.FACEBOOK_CLIENT_ID,
-//     clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-//     callbackURL: process.env.FACEBOOK_CALLBACK_URL,
-//     profileFields: ['id', 'displayName', 'name', 'gender', 'picture.type(large)', 'email']
-// }, (accessToken, refreshToken, profile, cb) => {
-//     console.log(profile);
-//     return cb(null, profile);
-// }));
 
 // // Routes
 app.get('/home', (req, res) => {
