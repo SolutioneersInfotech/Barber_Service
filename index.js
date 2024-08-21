@@ -23,11 +23,11 @@ app.use(express.urlencoded({ extended: true })); // Parses URL-encoded bodies
 app.use(express.static('public'));
 
 // CORS configuration 
-app.use(cors({
-    origin: 'http://localhost:5173',
-    methods: 'GET, POST, PUT, DELETE, PATCH, HEAD',
-    credentials: true,
-}));
+// app.use(cors({
+//     origin: 'http://localhost:5173',
+//     methods: 'GET, POST, PUT, DELETE, PATCH, HEAD',
+//     credentials: true,
+// }));
 
 // // Routes
 app.get('/home', (req, res) => {
