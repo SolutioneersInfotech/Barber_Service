@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 const connectDB = require('./utils/db');
 const errorHandler = require('./middleware/errorHandling');
 const authRoutes = require('./routes/auth');
-const otpRoutes = require('./routes/otp_routes');
+const otpRoutes = require('./routes/otp_routes'); 
 const userInfoRoutes = require('./routes/Info_user_route');
 const session = require('express-session');
 const passport = require('passport');
@@ -22,7 +22,7 @@ app.use(express.urlencoded({ extended: true })); // Parses URL-encoded bodies
 // Serve static files from the "public" directory
 app.use(express.static('public'));
 
-// CORS configuration
+// CORS configuration 
 app.use(cors({
     origin: 'http://localhost:5173',
     methods: 'GET, POST, PUT, DELETE, PATCH, HEAD',

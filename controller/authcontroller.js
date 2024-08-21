@@ -226,6 +226,9 @@ const login = async (req, res) => {
     }
 };
 
+
+
+
 // Register route
 const register = async (req, res) => {
     const { firstName, lastName, email, phone, DOB, gender, address } = req.body;
@@ -271,6 +274,8 @@ const register = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
+
 
 // Helper functions for validation
 const validateEmail = (email) => {
