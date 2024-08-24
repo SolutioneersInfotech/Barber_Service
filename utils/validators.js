@@ -27,10 +27,14 @@ const validateEmail = (email) => {
 
 // Validator for phone number
 const validatePhoneNumber = (phone) => {
-    // Example: phone number should be exactly 10 digits
-    const phoneRegex = /^\d{10}$/;
+    // const phoneRegex = /^\d{10}$/;
+    const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+
     return phoneRegex.test(phone);
 };
+
+
+
 
 module.exports = {
     validateEmail,
