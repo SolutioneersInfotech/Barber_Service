@@ -70,7 +70,7 @@ const login = async (req, res) => {
 
 
     try {
-        if (otp) {
+          if (otp) {
             // verify otp
             const verificationResult = await verifyOtp(phone, otp);
 

@@ -2,10 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./utils/db');
-const errorHandler = require('./middleware/errorhandling');
-const authRoutes = require('./routes/auth');
-const otpRoutes = require('./routes/otp_routes'); 
+ 
 const userInfoRoutes = require('./routes/Info_user_route');
+
 const session = require('express-session');
 const passport = require('passport');
 const path = require('path');
@@ -33,10 +32,7 @@ app.use(cors({
 app.get('/', (req, res) => {
     res.send('Welcome to Barber App');
 });
-
-app.use('/auth', authRoutes);
-app.use('/otp', otpRoutes);
-app.use('/users', userInfoRoutes);
+ 
 
 // Middleware for error handling
 app.use(errorHandler);
