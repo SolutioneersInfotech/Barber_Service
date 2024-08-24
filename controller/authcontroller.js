@@ -4,7 +4,7 @@ const User = require('../models/User_model');
 const Otp = require('../models/otp_model');
 const otpGenerator = require('otp-generator');
 const { sendGeneralResponse } = require('../utils/responseHelper');
-const { validateRequiredFields } = require('../utils/validateRequiredFields');
+const { validateRequiredFields } = require('../utils/validators');
 
 
 // Function to verify OTP
@@ -98,7 +98,7 @@ const login = async (req, res) => {
 
 // Register route
 const register = async (req, res) => {
-    const { firstName, lastName, email, phone, DOB, gender, address } = req.body;
+    const { firstName, lastName, email, phone, DOB, gender, address, profile_img } = req.body;
 
 
     const requiredFields = {
@@ -108,7 +108,8 @@ const register = async (req, res) => {
         phone,
         DOB,
         gender,
-        address
+        address,
+        profile_img
     };
 
  
@@ -123,7 +124,7 @@ const register = async (req, res) => {
     }
 
     if (!validatePhoneNumber(phone)) {
-        console.log("asasasas")
+      
         return sendGeneralResponse(res, false, 'Invalid phone number', 400);
     }
 
@@ -140,7 +141,7 @@ const register = async (req, res) => {
             return res.status(400).json({ error: message.trim() });
         }
 
-        const user = new User({ firstName, lastName, email, phone, DOB, gender, address });
+        const user = new User({ firstName, lastName, email, phone, DOB, gender, address , profile_img});
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
         user.token = token;
         await user.save();
@@ -150,11 +151,7 @@ const register = async (req, res) => {
 
          sendGeneralResponse(res, true, 'Registered successfully', 200 , user);
 
-        // res.status(201).json({
-        //     success: true,
-        //     message: 'Registered successfully',
-        //     token
-        // });
+       
     } catch (error) {
         if (error.name === 'ValidationError') {
             const messages = Object.values(error.errors).map(err => err.message);
@@ -177,7 +174,7 @@ const validateEmail = (email) => {
 };
 
 const validatePhoneNumber = (phone) => {
-    const re = /^\+?[1-9]\d{1,14}$/; // Assuming phone number is 10 digits
+    const re = /^\+?[1-9]\d{9}$/; // Assuming phone number is 10 digits
     return re.test(String(phone));
 };
 

@@ -60,6 +60,11 @@ const userSchema = new Schema({
     trim: true,
     maxlength: [200, 'Address cannot be more than 200 characters']
   },
+  profile_img: {
+    type: String,
+    required: [true, 'profile_img is required'],
+    trim: true,
+  },
   token:{
     type:String,
     required: [true],

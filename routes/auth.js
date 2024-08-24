@@ -10,8 +10,7 @@ router.post('/login', login);
 
 // Protected route
 router.get('/profile', verifyToken, (req, res) => {
-    // Example protected route
-    res.json({ message: 'This is a protected route', user: req.user });
+     res.json({ message: 'This is a protected route', user: req.user });
 });
 
 module.exports = router;
