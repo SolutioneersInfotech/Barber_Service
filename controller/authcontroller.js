@@ -124,7 +124,7 @@ const register = async (req, res) => {
     }
 
     if (!validatePhoneNumber(phone)) {
-        console.log("asasasas")
+      
         return sendGeneralResponse(res, false, 'Invalid phone number', 400);
     }
 
@@ -174,7 +174,7 @@ const validateEmail = (email) => {
 };
 
 const validatePhoneNumber = (phone) => {
-    const re = /^\+?[1-9]\d{1,14}$/; // Assuming phone number is 10 digits
+    const re = /^\+?[1-9]\d{9}$/; // Assuming phone number is 10 digits
     return re.test(String(phone));
 };
 
