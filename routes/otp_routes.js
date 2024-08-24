@@ -8,12 +8,10 @@
 
 // module.exports = router;
 const express = require("express");
-// const { validateSendOtp, validateVerifyOtp } = require("../utils/otpvalidator.js");
-const { sendotp } = require("../controller/otp_controller.js");
+ const { sendotp } = require("../controller/otp_controller.js");
 
 const router = express.Router();
 
 router.post('/send-otp', sendotp);
-// router.post('/verify-otp', validateVerifyOtp, verifyotp);
-
+ 
 module.exports = router;
