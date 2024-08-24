@@ -2,13 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./utils/db');
-const errorHandler = require('./middleware/errorHandling');
-
-//routes import
-const authRoutes = require('./routes/auth');
-const custRoutes = require('./routes/cust_route')
-const otpRoutes = require('./routes/otp_routes');
-const barberRoutes = require('./routes/barber_route')
+ 
 const userInfoRoutes = require('./routes/Info_user_route');
 
 const session = require('express-session');
@@ -27,7 +21,7 @@ app.use(express.urlencoded({ extended: true })); // Parses URL-encoded bodies
 // Serve static files from the "public" directory
 app.use(express.static('public'));
 
-// CORS configuration
+// CORS configuration 
 app.use(cors({
     origin: 'http://localhost:5173',
     methods: 'GET, POST, PUT, DELETE, PATCH, HEAD',
@@ -35,15 +29,10 @@ app.use(cors({
 }));
 
 // // Routes
-app.get('/home', (req, res) => {
-    res.send('Hello world');
+app.get('/', (req, res) => {
+    res.send('Welcome to Barber App');
 });
-
-app.use('/api/auth', authRoutes);
-app.use('/api/customers', custRoutes);
-app.use('/api/otp', otpRoutes);
-app.use('/api/users', userInfoRoutes);
-app.use('/api/barbers', barberRoutes);
+ 
 
 // Middleware for error handling
 app.use(errorHandler);
