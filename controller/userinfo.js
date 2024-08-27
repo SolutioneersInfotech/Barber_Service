@@ -4,7 +4,7 @@ const { validateEmail, validatePhoneNumber } = require('../utils/validators');
 
 
 // Get user by ID
-exports.getUserById = async (req, res) => {
+const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -16,7 +16,7 @@ exports.getUserById = async (req, res) => {
 };
 
 // Create a new user
-exports.createUser = async (req, res) => {
+const createUser = async (req, res) => {
   const { firstName, lastName, email, phone, DOB, gender, address } = req.body;
 
   // Check if all fields are provided
@@ -65,7 +65,7 @@ exports.createUser = async (req, res) => {
 };
 
 // Update user by ID
-exports.updateUserById = async (req, res) => {
+const updateUserById = async (req, res) => {
   const { firstName, lastName, email, phone, DOB, gender, address } = req.body;
 
   try {
@@ -81,7 +81,7 @@ exports.updateUserById = async (req, res) => {
 };
 
 // Delete user by ID
-exports.deleteUserById = async (req, res) => {
+const deleteUserById = async (req, res) => {
   try {
     const deletedUser = await User.findByIdAndDelete(req.params.id);
     if (!deletedUser) return res.status(404).json({ message: 'User not found' });
@@ -94,7 +94,7 @@ exports.deleteUserById = async (req, res) => {
 };
 
 // Get all users with pagination
-exports.getAllUsers = async (req, res) => {
+const getAllUsers = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
     const users = await User.find()
@@ -116,7 +116,7 @@ exports.getAllUsers = async (req, res) => {
 };
 
 // Search users by email or phone
-exports.searchUsers = async (req, res) => {
+const searchUsers = async (req, res) => {
   const { query } = req.query;
 
   if (!query) {
@@ -137,3 +137,5 @@ exports.searchUsers = async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+module.exports = { getAllUsers, getUserById, searchUsers,updateUserById, deleteUserById, createUser}
