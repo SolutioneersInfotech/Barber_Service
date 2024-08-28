@@ -140,12 +140,12 @@ const createShop = async (req, res) => {
     try {
         const {
             name, owner, contactNumber, email, website, address,
-            operatingHours, barbers, services, socialMediaLinks
+            operatingHours, barbers, services, socialMediaLinks, ratings
         } = req.body;
 
         const newShop = new Shop({
             name, owner, contactNumber, email, website, address,
-            operatingHours, barbers, services, socialMediaLinks
+            operatingHours, barbers, services, socialMediaLinks, ratings
         });
 
         const savedShop = await newShop.save();
@@ -179,55 +179,63 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 // Controller to get nearby shops
 const getNearbyShops = async (req, res) => {
     try {
-        const customerId = req.body; // Assuming req.user is set after authentication
+        // const customerId = req.body; // Assuming req.user is set after authentication
 
-        const customer = await User.findById(customerId);
-        if (!customer) {
-            return res.status(404).json({ success: false, message: 'Customer not found' });
-        }
+        // const customer = await User.findById(customerId);
+        // if (!customer) {
+        //     return res.status(404).json({ success: false, message: 'Customer not found' });
+        // }
 
-        if (!customer.address || customer.address.latitude === undefined || customer.address.longitude === undefined) {
-            return res.status(400).json({ success: false, message: 'Customer location data is incomplete' });
-        }
+        // if (!customer.address || customer.address.latitude === undefined || customer.address.longitude === undefined) {
+        //     return res.status(400).json({ success: false, message: 'Customer location data is incomplete' });
+        // }
 
-        const { latitude, longitude } = customer.address;
-        const maxDistance = req.query.maxDistance || 5; // Max distance in km (default 5 km)
+        // const { latitude, longitude } = customer.address;
+        // const maxDistance = req.query.maxDistance || 5; // Max distance in km (default 5 km)
 
-        const shops = await Shop.find();
+        //  const shops = await Shop.find();
+        const shops = await Shop.find().select('name ratings address.houseNo address.street address.city address.state address.pin address.country');
 
-        const nearbyShops = shops.filter(shop => {
-            const distance = calculateDistance(latitude, longitude, shop.address.latitude, shop.address.longitude);
-            return distance <= maxDistance;
-        });
 
-        res.status(200).json({ success: true, data: nearbyShops });
+        // const nearbyShops = shops.filter(shop => {
+        //     const distance = calculateDistance(latitude, longitude, shop.address.latitude, shop.address.longitude);
+        //     return distance <= maxDistance;
+        // });
+
+        res.status(200).json({ success: true, data: shops });
     } catch (error) {
         console.error('Error fetching nearby shops:', error);
         res.status(500).json({ success: false, message: 'Error fetching nearby shops', error: error.message });
     }
 };
 
+// due to some error it is not working
 // Controller to get popular shops
 const getPopularShops = async (req, res) => {
     try {
-        const minRating = req.query.minRating || 4;
-        const minBookings = req.query.minBookings || 20;
 
-        const popularShops = await Shop.find({
-            "ratings.rating": { $gte: minRating },
-            "appointmentHistory.0": { $exists: true }
-        }).populate('barbers');
+        // const minRating = parseFloat(req.query.minRating) || 3; // Minimum rating threshold
+        // const minRatingsCount = parseInt(req.query.minRatingsCount) || 20; // Minimum number of ratings required
 
-        const filteredPopularShops = popularShops.filter(shop => {
-            const totalBookings = shop.ratings.length;
-            return totalBookings >= minBookings;
-        });
 
-        res.status(200).json({ success: true, data: filteredPopularShops });
+        // // Find shops with at least one rating above the minRating
+        // const popularShops = await Shop.find({
+        //     "ratings.rating": { $gte: minRating }
+        // }).populate('barbers');
+        
+        // console.log(ratings.rating)
+        // // Filter shops to include only those with ratings count above minRatingsCount
+        // const filteredPopularShops = popularShops.filter(shop => {
+        //     const totalRatings = shop.ratings.length;
+        //     return totalRatings >= minRatingsCount;
+        // });
+
+        // res.status(200).json({ success: true, data: filteredPopularShops });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error fetching popular shops', error: error.message });
     }
 };
+
 
 // Helper functions for validation
 const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).toLowerCase());

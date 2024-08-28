@@ -3,9 +3,14 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./utils/db');
 const errorHandler = require('./middleware/errorhandling');
+
+//routes
+
 const authRoutes = require('./routes/auth');
 const otpRoutes = require('./routes/otp_routes'); 
+const shopsdetail = require('./routes/shopdetail_route')
 const userInfoRoutes = require('./routes/Info_user_route');
+
 const session = require('express-session');
 const passport = require('passport');
 const path = require('path');
@@ -37,6 +42,7 @@ app.get('/', (req, res) => {
 app.use('/auth', authRoutes);
 app.use('/otp', otpRoutes);
 app.use('/users', userInfoRoutes);
+app.use('/shopdetails', shopsdetail)
 
 // Middleware for error handling
 app.use(errorHandler);
