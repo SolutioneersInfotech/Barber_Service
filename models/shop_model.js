@@ -114,22 +114,12 @@ const shopSchema = new mongoose.Schema({
     required: true
   }],
   services: [serviceSchema], // Array of service schema objects
-  ratings: [{
-    customer: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Customer',
-      required: true
-    },
-    rating: {
-      type: Number,
+  ratings: {
+      type:mongoose.Schema.Types.Decimal128,
       min: 1,
       max: 5,
       required: true
-    },
-    comment: {
-      type: String
-    }
-  }],
+  },
   isActive: {
     type: Boolean,
     default: true
