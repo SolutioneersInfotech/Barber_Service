@@ -1,17 +1,21 @@
 const User = require('../models/User_model');
 const { validateEmail, validatePhoneNumber } = require('../utils/validators');
-
+const { sendGeneralResponse } = require('../utils/responseHelper');
 
 
 // Get user by ID
 const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) return
+    // res.status(404).json({ message: 'User not found' });
+    sendGeneralResponse(res, false, "user not found", 404,  'User not found');
+     
     res.json(user);
   } catch (error) {
     console.error('Error fetching user:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    // res.status(500).json({ message: 'Internal Server Error' });
+    sendGeneralResponse(res, false, error, 500, 'Internal Server Error');
   }
 };
 
@@ -60,7 +64,8 @@ const createUser = async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating user:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    // res.status(500).json({ message: 'Internal Server Error' });
+    sendGeneralResponse(res, false, error, 500, 'Internal Server Error');
   }
 };
 
@@ -70,15 +75,32 @@ const updateUserById = async (req, res) => {
 
   try {
     const updatedData = { firstName, lastName, email, phone, DOB, gender, address };
+    
     const updatedUser = await User.findByIdAndUpdate(req.params.id, updatedData, { new: true, runValidators: true });
-    if (!updatedUser) return res.status(404).json({ message: 'User not found' });
+    
+    if (!updatedUser) {
+      // return res.status(404).json({ message: 'User not found' });
+      sendGeneralResponse(res, true, 'Message', 404, 'user not found');
+    }
 
-    res.json(updatedUser);
+    // res.json(updatedUser);
+    sendGeneralResponse(res, true, "updated user", 200, updatedUser);
   } catch (error) {
     console.error('Error updating user:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+
+    let errorMessage = 'An error occurred while updating the user ';
+
+    if (error.name === 'ValidationError') {
+      errorMessage = 'Invalid input data';
+    } else if (error.name === 'CastError') {
+      errorMessage = 'Invalid User ID format';
+    }
+
+    // return res.status(500).json({ message: errorMessage });
+    sendGeneralResponse(res, false, 'Error', 500, errorMessage);
   }
 };
+
 
 // Delete user by ID
 const deleteUserById = async (req, res) => {
@@ -86,10 +108,12 @@ const deleteUserById = async (req, res) => {
     const deletedUser = await User.findByIdAndDelete(req.params.id);
     if (!deletedUser) return res.status(404).json({ message: 'User not found' });
 
-    res.status(200).json({ message: 'User deleted successfully' });
+    // res.status(200).json({ message: 'User deleted successfully' });
+    sendGeneralResponse(res, true, "updated user", 200, 'User deleted successfully');
   } catch (error) {
     console.error('Error deleting user:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    // res.status(500).json({ message: "Internet server Error" });
+    sendGeneralResponse(res, false, error, 500, 'Internal Server Error');
   }
 };
 
@@ -134,8 +158,9 @@ const searchUsers = async (req, res) => {
     res.json(users);
   } catch (error) {
     console.error('Error searching users:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    // res.status(500).json({ message: 'Internal Server Error' });
+    sendGeneralResponse(res, false, error, 500, 'Internal Server Error');
   }
 };
 
-module.exports = { getAllUsers, getUserById, searchUsers,updateUserById, deleteUserById, createUser}
+module.exports = { getAllUsers, getUserById, searchUsers, updateUserById, deleteUserById, createUser}

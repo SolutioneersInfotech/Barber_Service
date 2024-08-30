@@ -1,14 +1,14 @@
 const express = require('express');
 const { register, login, createShop, getNearbyShops, getPopularShops } = require('../controller/authcontroller.js');
 const verifyToken = require('../middleware/authmiddleware.js');
-const  { updateUserById } = require('../controller/userinfo.js')
+
 
 const router = express.Router();
 
 // Public routes
 router.post('/register', register);
 router.post('/login',login);
-router.post('/login/update', updateUserById);
+// router.post('/devicetoken_update', updatedevicetoken);
 
 // Protected routes
 router.post('/createshop', createShop); // Protect shop creation

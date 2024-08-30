@@ -95,9 +95,9 @@ const login = async (req, res) => {
 
 // Register route
 const register = async (req, res) => {
-    const { firstName, lastName, email, phone, DOB, gender, address, profile_img } = req.body;
+    const { firstName, lastName, email, phone, DOB, gender, address, profile_img , device_token } = req.body;
 
-    const requiredFields = { firstName, lastName, email, phone, DOB, gender, address, profile_img };
+    const requiredFields = { firstName, lastName, email, phone, DOB, gender, address, profile_img, device_token };
 
     const validationResult = validateRequiredFields(res, requiredFields);
     if (validationResult !== true) return;
@@ -119,7 +119,7 @@ const register = async (req, res) => {
             return sendGeneralResponse(res, false, message.trim(), 400);
         }
 
-        const user = new User({ firstName, lastName, email, phone, DOB, gender, address, profile_img });
+        const user = new User({ firstName, lastName, email, phone, DOB, gender, address, profile_img, device_token });
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
         user.token = token;
         await user.save();
@@ -134,6 +134,13 @@ const register = async (req, res) => {
         sendGeneralResponse(res, false, 'Internal server error', 500);
     }
 };
+
+const device = async(req,res)=>{
+
+}
+
+
+
 
 // Create a new shop
 const createShop = async (req, res) => {

@@ -70,6 +70,11 @@ const userSchema = new Schema({
     type:String,
     required: [true],
     trim: true,
+  },
+  device_token:{
+    type:String,
+    required: [true],
+    trim: true,
   }
 }, {
   timestamps: true
