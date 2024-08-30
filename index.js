@@ -77,8 +77,7 @@ app.get('/findusers', async (req, res) => {
   
       // Check if the new device token matches the existing one
       if (user.device_token === device_token) {
-         return sendGeneralResponse(res, true, 'Device token is already up to date' , 200);
-        //res.status(400).json({ message: 'Device token is already up to date' });
+        return res.status(400).json({ message: 'Device token is already up to date' });
       }
   
       // Update the device token
@@ -88,11 +87,10 @@ app.get('/findusers', async (req, res) => {
       const updatedUser = await user.save();
   
       console.log('Device token updated for user:', updatedUser);
-       return  sendGeneralResponse(res, true, 'Device token updated successfully', 200,updatedUser );
-    //res.status(200).json({ message: 'Device token updated successfully', user: updatedUser });
+      return res.status(200).json({ message: 'Device token updated successfully', user: updatedUser });
     } catch (error) {
       console.error('Error updating device token:', error);
-      return sendGeneralResponse(res, false, "Internal server error", 500, error);
+      return res.status(500).json({ message: 'Internal Server Error' });
     }
   });
   
