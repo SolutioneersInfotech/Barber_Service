@@ -219,9 +219,43 @@ const getPopularShops = async (req, res) => {
     }
 };
 
+//image one by one display logic
+
+const imageUrls = [
+    'https://images.pexels.com/photos/2899097/pexels-photo-2899097.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+    'https://images.pexels.com/photos/213780/pexels-photo-213780.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+    'https://images.pexels.com/photos/2820884/pexels-photo-2820884.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+    'https://docs.flutter.dev/assets/images/dash/dash-fainting.gif',
+    'https://picsum.photos/250?image=9',
+    'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl-2.jpg',
+    'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg',
+    'https://blog.ippon.fr/content/images/2023/09/RGFzaGF0YXJfRGV2ZWxvcGVyX092ZXJJdF9jb2xvcl9QR19zaGFkb3c-.png',
+    'https://picsum.photos/seed/picsum/200/300',
+    'https://picsum.photos/200/300?grayscale',
+    'https://picsum.photos/200/300?random=1',
+    'https://picsum.photos/200/300?random=2',
+  ];
+
+const getImage = (req, res) => {
+    const { index } = req.query;
+    
+    // Ensure index is a number and within bounds
+    const imageIndex = parseInt(index, 10);
+    
+    if (isNaN(imageIndex) || imageIndex < 0 || imageIndex >= imageUrls.length) {
+      return res.status(400).json({ message: 'Invalid index' });
+    }
+    
+    const imageUrl = imageUrls[imageIndex];
+    
+    // Send the image URL
+    res.json({ imageUrl });
+  };
+
+
 
 // Helper functions for validation
 const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).toLowerCase());
 const validatePhoneNumber = (phone) => /^\+?[1-9]\d{9}$/.test(String(phone));
 
-module.exports = { login, register, createShop, getPopularShops, getNearbyShops };
+module.exports = { login, register, createShop, getPopularShops, getNearbyShops, getImage };
