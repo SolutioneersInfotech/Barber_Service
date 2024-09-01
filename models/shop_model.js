@@ -12,7 +12,7 @@ const subServiceSchema = new mongoose.Schema({
     required: true
   },
   duration: {
-    type: Number, // Duration in minutes
+    type: Number, 
     required: true
   }
 });
@@ -24,7 +24,7 @@ const serviceSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  subServices: [subServiceSchema] // Array of sub-services
+  subServices: [subServiceSchema]  
 });
 
 // Shop schema
@@ -78,11 +78,11 @@ const shopSchema = new mongoose.Schema({
     },
     latitude: {
       type: Number,
-      required: true // Assumed to be fetched via an API
+      required: true  
     },
     longitude: {
       type: Number,
-      required: true // Assumed to be fetched via an API
+      required: true 
     },
     country: {
       type: String,
@@ -113,12 +113,12 @@ const shopSchema = new mongoose.Schema({
     ref: 'Barber',
     required: true
   }],
-  services: [serviceSchema], // Array of service schema objects
+  services: [serviceSchema],  
+
   ratings: {
-      type:mongoose.Schema.Types.Decimal128,
-      min: 1,
-      max: 5,
-      required: true
+    type: String,
+    required: true,
+    trim: true
   },
   isActive: {
     type: Boolean,
@@ -141,6 +141,8 @@ const shopSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+shopSchema.index({ 'address.location': '2dsphere' });
 
 const Shop = mongoose.model('Shop', shopSchema);
 

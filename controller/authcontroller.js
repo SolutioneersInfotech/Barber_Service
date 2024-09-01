@@ -53,7 +53,9 @@ const verifyOtp = async (phone, otp) => {
     }
 };
 
-// Login route
+
+
+// user  Login 
 const login = async (req, res) => {
     const { phone, otp } = req.body;
 
@@ -93,7 +95,11 @@ const login = async (req, res) => {
     }
 };
 
-// Register route
+
+
+
+ 
+// user register 
 const register = async (req, res) => {
     const { firstName, lastName, email, phone, DOB, gender, address, profile_img , device_token } = req.body;
 
@@ -134,10 +140,47 @@ const register = async (req, res) => {
         sendGeneralResponse(res, false, 'Internal server error', 500);
     }
 };
+ 
 
-const device = async(req,res)=>{
 
-}
+
+
+// find user through token
+const finduser = async (req, res) => {
+    const { device_token } = req.query;
+  
+    try {
+        const user = await User.findOne({ device_token });
+        if (user) {
+          return sendGeneralResponse(res, true, "user find", 200 ,user);
+        }
+         return sendGeneralResponse(res, false, "user not found", 400 ,error);
+
+    } catch (error) {
+         return sendGeneralResponse(res, false, "Error finding user", 400 ,error);
+    }
+};
+
+
+
+// update device token
+const updateDeviceToken = async (req, res) => {
+    const { userId, device_token } = req.body;
+  
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+         return sendGeneralResponse(res, false, "User not found", 404);
+        }
+        user.device_token = device_token;
+        const updatedUser = await user.save();
+         return sendGeneralResponse(res, true, "Device token updated successfully", 200, updatedUser);
+
+     } catch (error) {
+         return sendGeneralResponse(res, false, "Internal Server Error", 500, error);
+     }
+};
+
 
 
 
@@ -183,79 +226,11 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
     return R * c;
 };
 
-// Controller to get nearby shops
-const getNearbyShops = async (req, res) =>  {
-    try {
-        // Find all shops and select only specific fields
-        const shops = await Shop.find({})
-            .select('name ratings address.houseNo address.street address.city address.state address.pin address.country');
-        
-        // Use sendGeneralResponse utility function to send a successful response
-        sendGeneralResponse(res, true, 'Nearby Shops', 200, shops);
-
-    } catch (error) {
-        console.error('Error fetching nearby shops:', error);
-        // Use sendGeneralResponse utility function to send an error response
-        sendGeneralResponse(res, false, 'Error fetching nearby shops', 500, error.message);
-    }
-};
-// due to some error it is not working
-// Controller to get popular shops
-const getPopularShops = async (req, res) => {
-    try {
-        // Fetch shops sorted by 'ratings' in descending order
-        const shops = await Shop.find({})
-            .sort({ ratings: -1 }) // Sort by ratings in decreasing order
-            .select('name ratings address.houseNo address.street address.city address.state address.pin address.country'); // Select specific fields
-
-        // res.status(200).json(shops);
-        sendGeneralResponse(res, true, 'Popular shops', 200, shops);
-
-    } catch (err) {
-        console.error(err);
-        // res.status(500).json({ error: 'Internal server error' });
-        sendGeneralResponse(res, false, 'Error fetching Popular shops', 500, error.message);
-
-    }
-};
-
-//image one by one display logic
-
-const imageUrls = [
-    'https://images.pexels.com/photos/2899097/pexels-photo-2899097.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-    'https://images.pexels.com/photos/213780/pexels-photo-213780.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-    'https://images.pexels.com/photos/2820884/pexels-photo-2820884.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-    'https://docs.flutter.dev/assets/images/dash/dash-fainting.gif',
-    'https://picsum.photos/250?image=9',
-    'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl-2.jpg',
-    'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg',
-    'https://blog.ippon.fr/content/images/2023/09/RGFzaGF0YXJfRGV2ZWxvcGVyX092ZXJJdF9jb2xvcl9QR19zaGFkb3c-.png',
-    'https://picsum.photos/seed/picsum/200/300',
-    'https://picsum.photos/200/300?grayscale',
-    'https://picsum.photos/200/300?random=1',
-    'https://picsum.photos/200/300?random=2',
-  ];
-
-const getImage = (req, res) => {
-    const { index } = req.query;
-    
-    // Ensure index is a number and within bounds
-    const imageIndex = parseInt(index, 10);
-    
-    if (isNaN(imageIndex) || imageIndex < 0 || imageIndex >= imageUrls.length) {
-      return res.status(400).json({ message: 'Invalid index' });
-    }
-    
-    const imageUrl = imageUrls[imageIndex];
-    
-    // Send the image URL
-    res.json({ imageUrl });
-  };
 
 
-
-// Helper functions for validation
 const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).toLowerCase());
 const validatePhoneNumber = (phone) => /^\+?[1-9]\d{9}$/.test(String(phone));
 
-module.exports = { login, register, createShop, getPopularShops, getNearbyShops, getImage };
+
+
+module.exports = { login, register, finduser , updateDeviceToken, createShop,  };
