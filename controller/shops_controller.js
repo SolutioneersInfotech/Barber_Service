@@ -1,4 +1,5 @@
 const Shop = require('../models/shop_model')
+const barber = require('../models/barber_model')
 
 
 const mongoose = require('mongoose'); 
@@ -14,18 +15,35 @@ const shopdetails = async (req, res) => {
 
         }
          const shop = await Shop.findById(shopId)
-        // .populate('barbers')        
-        .populate('services')        
-        .populate('ratings.customer');
+         .populate({
+            path: 'barbers', // Populate barbers field
+            select: 'fullName profilePic servicesOffered', // Select specific fields from Barber model
+          })
+          .populate({
+            path: 'services.subServices', // Populate nested subServices field if necessary
+            select: 'subServiceName price duration',
+          });
         if (!shop) {
 
             return sendGeneralResponse(res , false , "Shop not found", 404)
 
          }
-
-        sendGeneralResponse(res, true, 'Shop detail', 200, shop);
-
-
+       // Response with the shop details
+       const shops = 
+       {
+       images: shop.images,
+       barbers: shop.barbers.map(barber => ({
+         id: barber._id,
+         name: barber.fullName,
+         servicesOffered: barber.servicesOffered,
+         profile : barber.profilePic // Assuming `servicesOffered` is a field in Barber model
+       })),
+       about : `${shop.name} owned by ${shop.owner}. Contact Number: ${shop.contactNumber}, Email: ${shop.email}, Website: ${shop.website}`,
+       services: shop.services,
+       packages: shop.services.flatMap(service => service.subServices), // Flattening sub-services into packages
+       reviews: shop.ratings || [] // Assuming reviews are stored in the shop document
+     }
+      return sendGeneralResponse(res, true, 'data', 200, shops)
     } catch (error) {
         sendGeneralResponse(res, false, 'Error fetching shop details', 500, error.message);
     }

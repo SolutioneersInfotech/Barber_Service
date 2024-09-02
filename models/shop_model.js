@@ -55,6 +55,12 @@ const shopSchema = new mongoose.Schema({
     type: String,
     match: [/^https?:\/\/[^\s$.?#].[^\s]*$/, 'Invalid URL format']
   },
+  profile:{
+    type: String,
+    default:"https://cdn.vectorstock.com/i/1000v/92/50/barber-salon-barbershop-logo-vintage-men-haircut-vector-42979250.avif",
+    required: [true, 'profile is required'],
+    trim: true,
+  } ,
   address: {
     houseNo: {
       type: String,
@@ -89,7 +95,8 @@ const shopSchema = new mongoose.Schema({
       required: true
     }
   },
-  operatingHours: [{
+
+ operatingHours: [{
     day: {
       type: String,
       enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
@@ -114,7 +121,6 @@ const shopSchema = new mongoose.Schema({
     required: true
   }],
   services: [serviceSchema],  
-
   ratings: {
     type: String,
     required: true,
@@ -137,7 +143,13 @@ const shopSchema = new mongoose.Schema({
       type: String,
       match: [/^https?:\/\/(www\.)?twitter\.com\/[A-Za-z0-9_.-]+$/, 'Invalid Twitter URL']
     }
-  }
+  },
+  images: [
+    String,
+  ],
+  gallery:[
+    String
+  ]
 }, {
   timestamps: true
 });
