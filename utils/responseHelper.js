@@ -10,10 +10,13 @@
  * @returns {Object} - JSON response with the error message.
  */
 function sendGeneralResponse(res, status, message, statusCode, data=[]) {
+
+    const responseData = Array.isArray(data) ? data : [data];
+
     return res.status(statusCode).json({
         status: status,
         message: message,
-        data: data
+        data: responseData
     });
 }
 
