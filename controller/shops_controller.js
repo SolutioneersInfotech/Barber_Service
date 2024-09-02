@@ -1,19 +1,40 @@
 const Shop = require('../models/shop_model')
 
 
+const mongoose = require('mongoose'); 
+const { sendGeneralResponse } = require('../utils/responseHelper');
 
 const shopdetails = async (req, res) => {
     try {
         const shopId = req.params.id;
-        const shop = await Shop.findById(shopId).populate('barbers services ratings.customer');
-        if (!shop) {
-            return res.status(404).json({ success: false, message: 'Shop not found' });
+
+            if (!mongoose.Types.ObjectId.isValid(shopId)) {
+
+            return sendGeneralResponse(res , false , "Invalid Shop ID", 400)
+
         }
-        res.status(200).json({ success: true, data: shop });
+         const shop = await Shop.findById(shopId)
+        // .populate('barbers')        
+        .populate('services')        
+        .populate('ratings.customer');
+        if (!shop) {
+
+            return sendGeneralResponse(res , false , "Shop not found", 404)
+
+         }
+
+        sendGeneralResponse(res, true, 'Shop detail', 200, shop);
+
+
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Error fetching shop details', error: error.message });
+        sendGeneralResponse(res, false, 'Error fetching shop details', 500, error.message);
     }
 };
+
+
+
+
+
 
 
 

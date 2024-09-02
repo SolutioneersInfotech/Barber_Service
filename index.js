@@ -47,7 +47,7 @@ app.get('', (req, res) => {
   
 app.use('', authRoutes);
   app.use('/users', userInfoRoutes);
-app.use('/shopdetails', shopsdetail);
+// app.use('/shopdetails', shopsdetail);
 
 // Middleware for error handling
 app.use(errorHandler);

@@ -1,9 +1,13 @@
 const express = require('express');
 const shopController = require('../controller/shops_controller.js')
+// const { shopdetails } = require('../controllers/shops_controller.js');
+
 const router = express.Router();
 
 
-router.get('/:id', shopController.shopdetails);
+// router.get('/:id', shopController.shopdetails);
+router.get('/shop/:id', shopController.shopdetails);
+
 // Route for about shop
 router.get('/about/:id', shopController.about);
 

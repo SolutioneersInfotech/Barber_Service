@@ -5,6 +5,7 @@ const { getNearbyShops } = require('../controller/shop_near_by.js');
 const { getPopularShops } = require('../controller/popular_shops.js');
 const { sendotp } = require("../controller/otp_controller.js");
 const getAdds = require('../controller/adds.js');
+const { shopdetails } = require('../controller/shops_controller.js');
 
 const router = express.Router();
 
@@ -17,6 +18,9 @@ router.put('/update_device_token', updateDeviceToken);
 router.post('/send-otp', sendotp);
 router.get('/finduser', finduser); 
 router.get('/getAdds', getAdds); 
+
+router.get('/shopDetail/:id', shopdetails);
+
 
 
  router.post('/createshop', createShop);
