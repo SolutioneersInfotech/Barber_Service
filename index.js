@@ -102,7 +102,7 @@ app.post('/review', async (req, res) => {
             review: newReview
         });
 
-        console.log('Review created successfully');
+
     } catch (error) {
         // Send an error response
         res.status(400).json({
