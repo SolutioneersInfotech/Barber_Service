@@ -15,10 +15,10 @@ const shopdetails = async (req, res) => {
 
         }
          const shop = await Shop.findById(shopId)
-         .populate({
-            path: 'barbers', // Populate barbers field
-            select: 'fullName profilePic servicesOffered', // Select specific fields from Barber model
-          })
+        //  .populate({
+        //     path: 'barbers', // Populate barbers field
+        //     select: 'fullName profilePic servicesOffered', // Select specific fields from Barber model
+        //   })
           .populate({
             path: 'services.subServices', // Populate nested subServices field if necessary
             select: 'subServiceName price duration',
@@ -41,7 +41,7 @@ const shopdetails = async (req, res) => {
        about : `${shop.name} owned by ${shop.owner}. Contact Number: ${shop.contactNumber}, Email: ${shop.email}, Website: ${shop.website}`,
        services: shop.services,
        packages: shop.services.flatMap(service => service.subServices), // Flattening sub-services into packages
-       reviews: shop.ratings || [] // Assuming reviews are stored in the shop document
+       reviews: shop.rating || [] // Assuming reviews are stored in the shop document
      }
       return sendGeneralResponse(res, true, 'data', 200, shops)
     } catch (error) {

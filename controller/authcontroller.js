@@ -15,7 +15,7 @@ const verifyOtp = async (phone, otp) => {
         if (!otpRecord) {
             return {
                 status: false,
-                message: 'Phone number not found',
+                message: 'Again send OTP',
                 data: []
             };
         }
