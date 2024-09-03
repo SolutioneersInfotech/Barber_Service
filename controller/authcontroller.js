@@ -148,16 +148,25 @@ const register = async (req, res) => {
 // find user through token
 const finduser = async (req, res) => {
     const { device_token } = req.query;
-  
+
+    // Check if the device_token is provided
+    if (!device_token) {
+        return sendGeneralResponse(res, false, "Device token is required", 400);
+    }
+
     try {
+        // Find the user using the device_token
         const user = await User.findOne({ device_token });
+
+        // Check if the user is found
         if (user) {
-          return sendGeneralResponse(res, true, "user find", 200 ,user);
+            return sendGeneralResponse(res, true, "User found", 200, user);
+        } else {
+            return sendGeneralResponse(res, false, "User not found", 404); // 404 for not found
         }
-         return sendGeneralResponse(res, false, "user not found", 400 ,error);
 
     } catch (error) {
-         return sendGeneralResponse(res, false, "Error finding user", 400 ,error);
+        return sendGeneralResponse(res, false, "Error finding user", 500, error); // 500 for server error
     }
 };
 

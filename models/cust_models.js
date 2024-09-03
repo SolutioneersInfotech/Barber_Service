@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const Shop = require('./shop_model');
+const Barber = require('./barber_model'); // Make sure you have these models
 
 // Customer schema
 const customerSchema = new mongoose.Schema({
@@ -28,7 +30,7 @@ const customerSchema = new mongoose.Schema({
     },
     profilePic: {
         type: String, // URL or path to the profile picture
-        default: 'default-profile-pic.jpg'
+        default: 'https://avatar.iran.liara.run/public/boy?username=Ash'
     },
     address: {
         houseNo: {
@@ -53,11 +55,11 @@ const customerSchema = new mongoose.Schema({
         },
         latitude: {
             type: Number,
-            required: true // Assumed to be fetched via an API
+            required: true
         },
         longitude: {
             type: Number,
-            required: true // Assumed to be fetched via an API
+            required: true
         },
         country: {
             type: String,
@@ -75,10 +77,14 @@ const customerSchema = new mongoose.Schema({
     },
     preferences: {
         hairType: {
-            type: String, // e.g., "Curly", "Straight", "Wavy"
+            type: String,
             trim: true
         }
     },
+    reviews: [{  // Ensure correct referencing
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Review'
+    }],
     appointmentHistory: [{
         barber: {
             type: mongoose.Schema.Types.ObjectId,
@@ -116,7 +122,7 @@ const customerSchema = new mongoose.Schema({
         }
     }]
 }, {
-    timestamps: true // Adds createdAt and updatedAt timestamps
+    timestamps: true // Adds createdAt and updatedAt timestamps to the Customer schema
 });
 
 const Customer = mongoose.model('Customer', customerSchema);

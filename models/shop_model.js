@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { type } = require('os');
 
 // Sub-service schema
 const subServiceSchema = new mongoose.Schema({
@@ -9,11 +10,13 @@ const subServiceSchema = new mongoose.Schema({
   },
   price: {
     type: Number,
-    required: true
+    required: true,
+    min: 0 // To ensure the price is not negative
   },
   duration: {
     type: Number, 
-    required: true
+    required: true,
+    min: 1 // Ensure at least 1 minute duration
   }
 });
 
@@ -55,12 +58,11 @@ const shopSchema = new mongoose.Schema({
     type: String,
     match: [/^https?:\/\/[^\s$.?#].[^\s]*$/, 'Invalid URL format']
   },
-  profile:{
+  shop_profile: {
     type: String,
-    default:"https://cdn.vectorstock.com/i/1000v/92/50/barber-salon-barbershop-logo-vintage-men-haircut-vector-42979250.avif",
-    required: [true, 'profile is required'],
-    trim: true,
-  } ,
+    default: "https://cdn.vectorstock.com/i/1000v/92/50/barber-salon-barbershop-logo-vintage-men-haircut-vector-42979250.avif",
+    trim: true
+  },
   address: {
     houseNo: {
       type: String,
@@ -95,8 +97,7 @@ const shopSchema = new mongoose.Schema({
       required: true
     }
   },
-
- operatingHours: [{
+  operatingHours: [{
     day: {
       type: String,
       enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
@@ -117,14 +118,14 @@ const shopSchema = new mongoose.Schema({
   }],
   barbers: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Barber',
-    required: true
+    ref: 'Barber'
   }],
   services: [serviceSchema],  
-  ratings: {
+  rating: {  
     type: String,
-    required: true,
-    trim: true
+    min: 0,
+    max: 5,
+    default: 0
   },
   isActive: {
     type: Boolean,
@@ -144,17 +145,24 @@ const shopSchema = new mongoose.Schema({
       match: [/^https?:\/\/(www\.)?twitter\.com\/[A-Za-z0-9_.-]+$/, 'Invalid Twitter URL']
     }
   },
-  images: [
-    String,
-  ],
-  gallery:[
-    String
-  ]
+  shop_images: [{
+    type:String
+  }],
+  gallery: [{
+     type:String
+  }],
+
+  reviews: [{  // Correct referencing for reviews
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Review'
+}],
+// Your existing fields...
 }, {
-  timestamps: true
+timestamps: true
 });
 
-shopSchema.index({ 'address.location': '2dsphere' });
+// Assuming you want to use GeoJSON for geolocation:
+shopSchema.index({ location: '2dsphere' });
 
 const Shop = mongoose.model('Shop', shopSchema);
 

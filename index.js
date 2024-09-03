@@ -12,8 +12,9 @@ const shopsdetail = require('./routes/shopdetail_route')
 const userInfoRoutes = require('./routes/Info_user_route');
 
 //model
-
+const Review= require('./models/reviews_model')
 const User= require('./models/User_model')
+const Customer = require('./models/cust_models')
 
 const session = require('express-session');
 const passport = require('passport');
@@ -52,8 +53,50 @@ app.use('', authRoutes);
 // Middleware for error handling
 app.use(errorHandler);
 
+app.post('/customer', async(req,res)=>{
+    try {
+        const customer = new Customer(req.body);
+        await customer.save();
+        res.status(201).json({
+            success: true,
+            message: 'Customer created successfully',
+            data: customer
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: 'Error creating customer',
+            error: error.message
+        });
+    }
+})
 
+app.post('/review', async(req,res)=>{
+    try {
+        const review = new Review({
+            shop: shopId,
+            customer: customerId,
+            rating: rating,
+            review: reviewText
+        });
 
+        await review.save();
+
+        // Update Shop with the new review
+        await Shop.findByIdAndUpdate(shopId, { $push: { reviews: review._id } });
+
+        // Update Customer with the new review
+        await Customer.findByIdAndUpdate(customerId, { $push: { reviews: review._id } });
+
+        console.log('Review created successfully');
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: 'Error creating review',
+            error: error.message
+        });
+    }
+})
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

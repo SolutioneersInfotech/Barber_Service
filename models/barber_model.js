@@ -30,7 +30,7 @@ const barberSchema = new mongoose.Schema({
         type: String, // URL or path to the profile picture
         default: 'https://avatar.iran.liara.run/public/boy?username=Ash',
         required: [true, 'profile_img is required'],
-        trim: true,
+        trim: true
     },
     address: {
         type: String,
@@ -50,23 +50,7 @@ const barberSchema = new mongoose.Schema({
             required: true
         }
     }],
-    ratings: [{
-        customer: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Customer',
-            required: true
-        },
-        rating: {
-            type: Number,
-            min: 1,
-            max: 5,
-            required: true
-        },
-        comment: {
-            type: String
-        }
-    }],
-    workSchedule: [{
+    schedule: [{
         day: {
             type: String,
             enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
@@ -90,13 +74,23 @@ const barberSchema = new mongoose.Schema({
         ref: 'Shop', // Reference to the Shop model
         required: true
     }],
+    reviews: [{ // Add this field to store references to reviews
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Review' // Reference to the Review model
+    }],
     isActive: {
         type: Boolean,
         default: true // Indicates if the barber is currently active
-    }
+    },
+    reviews: [{  // Optional: Add if reviews can be linked to barbers
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Review'
+    }],
+    // Your existing fields...
 }, {
-    timestamps: true // Adds createdAt and updatedAt timestamps
+    timestamps: true
 });
+
 const Barber = mongoose.model('Barber', barberSchema);
 
 module.exports = Barber;

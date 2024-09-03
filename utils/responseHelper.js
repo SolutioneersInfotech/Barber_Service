@@ -11,12 +11,12 @@
  */
 function sendGeneralResponse(res, status, message, statusCode, data=[]) {
 
-    const responseData = Array.isArray(data) ? data : [data];
+    // const responseData = Array.isArray(data) ? data : [data];
 
     return res.status(statusCode).json({
         status: status,
         message: message,
-        data: responseData
+        data: data
     });
 }
 
