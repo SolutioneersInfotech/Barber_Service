@@ -120,7 +120,11 @@ const shopSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Barber'
   }],
-  services: [serviceSchema],  
+  services: [serviceSchema],
+  reviews: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'review' // Reference to the Review model
+}],
   rating: {  
     type: String,
     min: 0,
@@ -152,13 +156,8 @@ const shopSchema = new mongoose.Schema({
      type:String
   }],
 
-  reviews: [{  // Correct referencing for reviews
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Review'
-}],
-// Your existing fields...
 }, {
-timestamps: true
+  timestamps: true
 });
 
 // Assuming you want to use GeoJSON for geolocation:

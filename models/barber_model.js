@@ -76,7 +76,7 @@ const barberSchema = new mongoose.Schema({
     }],
     reviews: [{ // Add this field to store references to reviews
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Review' // Reference to the Review model
+        ref: 'review' // Reference to the Review model
     }],
     isActive: {
         type: Boolean,

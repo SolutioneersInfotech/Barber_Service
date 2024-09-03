@@ -197,15 +197,9 @@ const updateDeviceToken = async (req, res) => {
 // Create a new shop
 const createShop = async (req, res) => {
     try {
-        const {
-            name, owner, contactNumber, email, website, address,
-            operatingHours, barbers, services, socialMediaLinks, ratings
-        } = req.body;
-
-        const newShop = new Shop({
-            name, owner, contactNumber, email, website, address,
-            operatingHours, barbers, services, socialMediaLinks, ratings
-        });
+        const newShop = new Shop(
+            req.body
+        );
 
         const savedShop = await newShop.save();
 

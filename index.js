@@ -15,6 +15,7 @@ const userInfoRoutes = require('./routes/Info_user_route');
 const Review= require('./models/reviews_model')
 const User= require('./models/User_model')
 const Customer = require('./models/cust_models')
+const Shop = require('./models/shop_model')
 
 const session = require('express-session');
 const passport = require('passport');
@@ -71,32 +72,47 @@ app.post('/customer', async(req,res)=>{
     }
 })
 
-app.post('/review', async(req,res)=>{
+app.post('/review', async (req, res) => {
     try {
-        const review = new Review({
-            shop: shopId,
-            customer: customerId,
-            rating: rating,
-            review: reviewText
+        const { shop, customer, barber, rating, review, likes } = req.body;
+
+        // Create a new review
+        const newReview = new Review({
+            shop,
+            customer,
+            barber,
+            rating,
+            review,
+            likes
         });
 
-        await review.save();
+        // Save the review to the database
+        await newReview.save();
 
         // Update Shop with the new review
-        await Shop.findByIdAndUpdate(shopId, { $push: { reviews: review._id } });
+        await Shop.findByIdAndUpdate(shop, { $push: { reviews: newReview._id } });
 
         // Update Customer with the new review
-        await Customer.findByIdAndUpdate(customerId, { $push: { reviews: review._id } });
+        await Customer.findByIdAndUpdate(customer, { $push: { reviews: newReview._id } });
+
+        // Send a success response
+        res.status(201).json({
+            success: true,
+            message: 'Review created successfully',
+            review: newReview
+        });
 
         console.log('Review created successfully');
     } catch (error) {
+        // Send an error response
         res.status(400).json({
             success: false,
             message: 'Error creating review',
             error: error.message
         });
     }
-})
+});
+
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

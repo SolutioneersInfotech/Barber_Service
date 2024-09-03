@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Shop = require('./shop_model');
-const Barber = require('./barber_model'); // Make sure you have these models
+const Barber = require('./barber_model'); // Add the required Barber model
 
 // Customer schema
 const customerSchema = new mongoose.Schema({
@@ -81,9 +81,9 @@ const customerSchema = new mongoose.Schema({
             trim: true
         }
     },
-    reviews: [{  // Ensure correct referencing
+    reviews: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Review'
+        ref: 'review' // Reference to the Review model
     }],
     appointmentHistory: [{
         barber: {
