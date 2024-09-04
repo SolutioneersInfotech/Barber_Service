@@ -38,10 +38,12 @@ const shopdetails = async (req, res) => {
          servicesOffered: barber.servicesOffered,
          profile : barber.profilePic // Assuming `servicesOffered` is a field in Barber model
        })),
-       about : `${shop.name} owned by ${shop.owner}. Contact Number: ${shop.contactNumber}, Email: ${shop.email}, Website: ${shop.website}`,
+       about : `${shop.name} is a premier salon owned by ${shop.owner}. We are located at ${shop.address.houseNo}, ${shop.address.street}, ${shop.address.city}, ${shop.address.state}, ${shop.address.pin}, ${shop.address.country}. For appointments or inquiries, please contact us at ${shop.contactNumber} or email us at ${shop.email}. Visit our website at ${shop.website} to learn more about our services and offerings.`,
        services: shop.services,
        packages: shop.services.flatMap(service => service.subServices), // Flattening sub-services into packages
-       reviews: shop.rating || [] // Assuming reviews are stored in the shop document
+       reviews: shop.rating || [], // Assuming reviews are stored in the shop document
+       gallery: shop.gallery ,
+       
      }
       return sendGeneralResponse(res, true, 'data', 200, shops)
     } catch (error) {
