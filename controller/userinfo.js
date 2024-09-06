@@ -77,7 +77,6 @@ const updateUserById = async (req, res) => {
     const updatedData = { firstName, lastName, email, phone, DOB, gender, address };
     
     const updatedUser = await User.findByIdAndUpdate(req.params.id, updatedData, { new: true, runValidators: true });
-    
     if (!updatedUser) {
       // return res.status(404).json({ message: 'User not found' });
       sendGeneralResponse(res, true, 'Message', 404, 'user not found');

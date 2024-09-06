@@ -1,7 +1,7 @@
 const Shop = require('../models/shop_model')
 const barber = require('../models/barber_model')
-
-
+const Customer = require('../models/cust_models')
+const Review = require('../models/reviews_model')
 const mongoose = require('mongoose'); 
 const { sendGeneralResponse } = require('../utils/responseHelper');
 
@@ -9,43 +9,61 @@ const shopdetails = async (req, res) => {
     try {
         const shopId = req.params.id;
 
-            if (!mongoose.Types.ObjectId.isValid(shopId)) {
-
-            return sendGeneralResponse(res , false , "Invalid Shop ID", 400)
-
+        if (!mongoose.Types.ObjectId.isValid(shopId)) {
+            return sendGeneralResponse(res, false, "Invalid Shop ID", 400);
         }
-         const shop = await Shop.findById(shopId)
-        //  .populate({
-        //     path: 'barbers', // Populate barbers field
-        //     select: 'fullName profilePic servicesOffered', // Select specific fields from Barber model
-        //   })
-          .populate({
-            path: 'services.subServices', // Populate nested subServices field if necessary
-            select: 'subServiceName price duration',
-          });
+
+        const shop = await Shop.findById(shopId)
+            .populate("barbers") // Populate barbers field
+            .populate({
+                path: 'reviews',
+                select: '_id review customer likes rating',
+                populate: {
+                    path: 'customer', // Populate the customer field
+                    select: 'fullName', // Select only the fullName of the customer
+                }
+            })
+            .exec();
+
         if (!shop) {
+            return sendGeneralResponse(res, false, "Shop not found", 404);
+        }
 
-            return sendGeneralResponse(res , false , "Shop not found", 404)
+        // Constructing the shop details response
+        const shops = {
+            images: shop.shop_images,
+            barbers: shop.barbers.map(barber => ({
+                id: barber._id,
+                name: barber.fullName,
+                profile: barber.profilePic,
+            })),
+            title: `${shop.name} is a premier salon owned by ${shop.owner}. We are located at ${shop.address.houseNo}, ${shop.address.street}, ${shop.address.city}, ${shop.address.state}, ${shop.address.pin}, ${shop.address.country}. For appointments or inquiries, please contact us at ${shop.contactNumber} or email us at ${shop.email}. Visit our website at ${shop.website} to learn more about our services and offerings.`,
+            About: {
+                Shop_Name: shop.name,
+                Location: shop.address,
+                Time: shop.time,
+                Rating: shop.rating,
+                Contact: shop.contactNumber,
+                Working_Days_Time: shop.operatingHours,
+                Email: shop.email,
+            },
+            services: shop.services.map(service => ({
+                serviceName: service.serviceName,
+                subServiceCount: service.subServices.length, // Count the number of sub-services
+                subServices: service.subServices, // Include sub-services if needed
+            })),
+            packages: shop.services.flatMap(service => service.subServices), // Flattening sub-services into packages
+            reviews: shop.reviews.map(re => ({
+                id: re._id,
+                Customer: re.customer.fullName, // Display the customer's full name
+                Comment: re.review,
+                Rating: re.rating,
+                Likes: re.likes,
+            })) || [], // Assuming reviews are stored in the shop document
+            gallery: shop.gallery,
+        };
 
-         }
-       // Response with the shop details
-       const shops = 
-       {
-       images: shop.images,
-       barbers: shop.barbers.map(barber => ({
-         id: barber._id,
-         name: barber.fullName,
-         servicesOffered: barber.servicesOffered,
-         profile : barber.profilePic // Assuming `servicesOffered` is a field in Barber model
-       })),
-       about : `${shop.name} is a premier salon owned by ${shop.owner}. We are located at ${shop.address.houseNo}, ${shop.address.street}, ${shop.address.city}, ${shop.address.state}, ${shop.address.pin}, ${shop.address.country}. For appointments or inquiries, please contact us at ${shop.contactNumber} or email us at ${shop.email}. Visit our website at ${shop.website} to learn more about our services and offerings.`,
-       services: shop.services,
-       packages: shop.services.flatMap(service => service.subServices), // Flattening sub-services into packages
-       reviews: shop.rating || [], // Assuming reviews are stored in the shop document
-       gallery: shop.gallery ,
-       
-     }
-      return sendGeneralResponse(res, true, 'data', 200, shops)
+        return sendGeneralResponse(res, true, 'data', 200, shops);
     } catch (error) {
         sendGeneralResponse(res, false, 'Error fetching shop details', 500, error.message);
     }

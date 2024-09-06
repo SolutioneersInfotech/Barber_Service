@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const { type } = require('os');
 
 // Sub-service schema
 const subServiceSchema = new mongoose.Schema({
@@ -11,12 +10,24 @@ const subServiceSchema = new mongoose.Schema({
   price: {
     type: Number,
     required: true,
-    min: 0 // To ensure the price is not negative
+    min: 0
   },
   duration: {
-    type: Number, 
+    type: Number,
     required: true,
-    min: 1 // Ensure at least 1 minute duration
+    min: 1
+  },
+  img: {
+    type: String,
+    required: true,
+    default: "https://cdn.vectorstock.com/i/1000v/92/50/barber-salon-barbershop-logo-vintage-men-haircut-vector-42979250.avif",
+    trim: true
+  },
+  description: {
+    type: String,
+    trim: true,
+    maxlength: 255,
+    default: ""
   }
 });
 
@@ -27,7 +38,7 @@ const serviceSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  subServices: [subServiceSchema]  
+  subServices: [subServiceSchema]
 });
 
 // Shop schema
@@ -64,38 +75,14 @@ const shopSchema = new mongoose.Schema({
     trim: true
   },
   address: {
-    houseNo: {
-      type: String,
-      required: true
-    },
-    street: {
-      type: String,
-      required: true
-    },
-    city: {
-      type: String,
-      required: true
-    },
-    state: {
-      type: String,
-      required: true
-    },
-    pin: {
-      type: Number,
-      required: true
-    },
-    latitude: {
-      type: Number,
-      required: true  
-    },
-    longitude: {
-      type: Number,
-      required: true 
-    },
-    country: {
-      type: String,
-      required: true
-    }
+    houseNo: { type: String, required: true },
+    street: { type: String, required: true },
+    city: { type: String, required: true },
+    state: { type: String, required: true },
+    pin: { type: Number, required: true },
+    latitude: { type: Number, required: true },
+    longitude: { type: Number, required: true },
+    country: { type: String, required: true }
   },
   operatingHours: [{
     day: {
@@ -103,65 +90,29 @@ const shopSchema = new mongoose.Schema({
       enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
       required: true
     },
-    openTime: {
-      type: String,
-      required: true
-    },
-    closeTime: {
-      type: String,
-      required: true
-    },
-    isClosed: {
-      type: Boolean,
-      default: false
-    }
+    openTime: { type: String, required: true },
+    closeTime: { type: String, required: true },
+    isClosed: { type: Boolean, default: false }
   }],
-  barbers: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Barber'
-  }],
+  barbers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Barber' }],
   services: [serviceSchema],
-  reviews: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'review' // Reference to the Review model
-}],
-  rating: {  
-    type: String,
+  reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: 'review' }],
+  rating: {
+    type: Number,
     min: 0,
     max: 5,
     default: 0
   },
-  isActive: {
-    type: Boolean,
-    default: true
-  },
+  isActive: { type: Boolean, default: true },
   socialMediaLinks: {
-    facebook: {
-      type: String,
-      match: [/^https?:\/\/(www\.)?facebook\.com\/[A-Za-z0-9_.-]+$/, 'Invalid Facebook URL']
-    },
-    instagram: {
-      type: String,
-      match: [/^https?:\/\/(www\.)?instagram\.com\/[A-Za-z0-9_.-]+$/, 'Invalid Instagram URL']
-    },
-    twitter: {
-      type: String,
-      match: [/^https?:\/\/(www\.)?twitter\.com\/[A-Za-z0-9_.-]+$/, 'Invalid Twitter URL']
-    }
+    facebook: { type: String, match: [/^https?:\/\/(www\.)?facebook\.com\/[A-Za-z0-9_.-]+$/, 'Invalid Facebook URL'] },
+    instagram: { type: String, match: [/^https?:\/\/(www\.)?instagram\.com\/[A-Za-z0-9_.-]+$/, 'Invalid Instagram URL'] },
+    twitter: { type: String, match: [/^https?:\/\/(www\.)?twitter\.com\/[A-Za-z0-9_.-]+$/, 'Invalid Twitter URL'] }
   },
-  shop_images: [{
-    type:String
-  }],
-  gallery: [{
-     type:String
-  }],
-
-}, {
-  timestamps: true
-});
-
-// Assuming you want to use GeoJSON for geolocation:
-shopSchema.index({ location: '2dsphere' });
+  shop_images: [{ type: String }],
+  gallery: [{ type: String }],
+  time: { type: String, default: '9:00 AM - 6:00 PM' }
+}, { timestamps: true });
 
 const Shop = mongoose.model('Shop', shopSchema);
 
