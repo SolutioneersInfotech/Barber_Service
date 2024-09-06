@@ -20,7 +20,7 @@ const shopdetails = async (req, res) => {
                 select: '_id review customer likes rating',
                 populate: {
                     path: 'customer', // Populate the customer field
-                    select: 'fullName', // Select only the fullName of the customer
+                    select: 'fullName profilePic', // Select only the fullName of the customer
                 }
             })
             .exec();
@@ -55,7 +55,8 @@ const shopdetails = async (req, res) => {
             packages: shop.services.flatMap(service => service.subServices), // Flattening sub-services into packages
             reviews: shop.reviews.map(re => ({
                 id: re._id,
-                Customer: re.customer.fullName, // Display the customer's full name
+                Customer: re.customer.fullName,
+                Customer_pic: re.customer.profilePic,
                 Comment: re.review,
                 Rating: re.rating,
                 Likes: re.likes,
