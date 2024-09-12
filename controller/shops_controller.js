@@ -2,8 +2,8 @@ const Shop = require('../models/shop_model')
 const barber = require('../models/barber_model')
 const Customer = require('../models/cust_models')
 const Review = require('../models/reviews_model')
-const User= require('../models/User_model')
-const mongoose = require('mongoose'); 
+const User = require('../models/User_model')
+const mongoose = require('mongoose');
 const { sendGeneralResponse } = require('../utils/responseHelper');
 
 const shopdetails = async (req, res) => {
@@ -20,7 +20,7 @@ const shopdetails = async (req, res) => {
             .populate("barbers")
             .populate({
                 path: 'reviews',
-                select: '_id review customer likes rating',
+                select: '_id review customer likes rating createdAt',
                 populate: {
                     path: 'customer',
                     select: 'fullName profilePic',
@@ -34,6 +34,26 @@ const shopdetails = async (req, res) => {
             return sendGeneralResponse(res, false, "Shop not found", 404);
         }
 
+        const reviews = await Review.find({ shop: shopId })
+            .populate('customer', 'fullName profilePic')
+            .exec();
+        const counts = await Review.aggregate([
+            {
+                $group: {
+                    _id: "$shopId",   // Group by the field (e.g., shop ID)
+                    count: { $sum: 1 }  // Count the number of occurrences
+                }
+            },
+            {
+                $project: {
+                    _id: 0,   // Exclude the _id field (i.e., shopId)
+                    count: 1   // Include only the count field
+                }
+            }
+        ]);
+
+        // Calculate total counts
+        const totalCounts = counts.reduce((total, item) => total + item.count, 0);
         // Construct the response data
         const shopData = {
             images: shop.shop_images || [],
@@ -48,6 +68,7 @@ const shopdetails = async (req, res) => {
                 Location: shop.address,
                 Time: shop.operatingHours,
                 Rating: shop.rating,
+                Totalreviews: totalCounts,
                 Contact: shop.contactNumber,
                 Working_Days_Time: shop.operatingHours,
                 Email: shop.email,
@@ -77,14 +98,20 @@ const shopdetails = async (req, res) => {
                     SubServiceName: subService.subServiceName,
                 }))
             })),
-            reviews: shop.reviews.map(review => ({
+            // // Fetch related data
+
+            reviews: reviews.map(review => ({
                 id: review._id,
-                Customer: review.customer.fullName,
-                Customer_pic: review.customer.profilePic,
-                Comment: review.review,
-                Rating: review.rating,
-                Likes: review.likes,
-            })) || [],
+                customer: {
+                    fullName: review.customer.fullName,
+                    profilePic: review.customer.profilePic
+                },
+                rating: review.rating,
+                review: review.review,
+                likes: review.likes,
+                createdAt: review.createdAt
+            })),
+
             gallery: shop.gallery || [],
         };
 
@@ -123,6 +150,8 @@ const services = async (req, res) => {
         res.status(500).json({ success: false, message: 'Error fetching shop services', error: error.message });
     }
 };
+
+
 
 
 const packages = async (req, res) => {
@@ -171,4 +200,5 @@ const review = async (req, res) => {
 
 
 
-module.exports = {  shopdetails ,services ,about,packages,gallery,review};
+
+module.exports = { shopdetails, services, about, packages, gallery, review };

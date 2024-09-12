@@ -8,6 +8,7 @@ const router = express.Router();
 router.get('/shop/:id', shopController.shopdetails);
 
 
+
 // // Route for about shop
 // router.get('/about/:id', shopController.about);
 
