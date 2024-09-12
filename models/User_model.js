@@ -75,7 +75,8 @@ const userSchema = new Schema({
     type:String,
     required: [true],
     trim: true,
-  }
+  },
+  bookmarkedShops: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Shop' }]
 }, {
   timestamps: true
 });

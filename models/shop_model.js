@@ -38,6 +38,10 @@ const serviceSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  rate:{
+    type:Number,
+
+  },
   subServices: [subServiceSchema]
 });
 
@@ -108,6 +112,15 @@ const shopSchema = new mongoose.Schema({
     facebook: { type: String, match: [/^https?:\/\/(www\.)?facebook\.com\/[A-Za-z0-9_.-]+$/, 'Invalid Facebook URL'] },
     instagram: { type: String, match: [/^https?:\/\/(www\.)?instagram\.com\/[A-Za-z0-9_.-]+$/, 'Invalid Instagram URL'] },
     twitter: { type: String, match: [/^https?:\/\/(www\.)?twitter\.com\/[A-Za-z0-9_.-]+$/, 'Invalid Twitter URL'] }
+  },
+  description:{
+    type:String,
+    trim:true,
+    default:""
+  },
+  fulldescription:{
+    type:String,
+    default:"",  
   },
   shop_images: [{ type: String }],
   gallery: [{ type: String }],

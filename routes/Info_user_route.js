@@ -7,6 +7,7 @@ const {
   deleteUserById,
   getAllUsers,
   searchUsers,
+  bookmark
 } = require('../controller/userinfo');
 // const multer = require('multer');
 const path = require('path');
@@ -32,5 +33,7 @@ router.put('/:id', updateUserById);
 router.delete('/:id', deleteUserById);
 router.get('/', getAllUsers);
 router.get('/search', searchUsers);
+router.get('/bookmark/:id', bookmark)
+// router.post('/bookmark/:id', bookmark)
 
 module.exports = router;

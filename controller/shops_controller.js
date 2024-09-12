@@ -2,6 +2,7 @@ const Shop = require('../models/shop_model')
 const barber = require('../models/barber_model')
 const Customer = require('../models/cust_models')
 const Review = require('../models/reviews_model')
+const User= require('../models/User_model')
 const mongoose = require('mongoose'); 
 const { sendGeneralResponse } = require('../utils/responseHelper');
 
@@ -9,29 +10,33 @@ const shopdetails = async (req, res) => {
     try {
         const shopId = req.params.id;
 
+        // Validate shop ID
         if (!mongoose.Types.ObjectId.isValid(shopId)) {
             return sendGeneralResponse(res, false, "Invalid Shop ID", 400);
         }
 
+        // Find the shop and populate necessary fields
         const shop = await Shop.findById(shopId)
-            .populate("barbers") // Populate barbers field
+            .populate("barbers")
             .populate({
                 path: 'reviews',
                 select: '_id review customer likes rating',
                 populate: {
-                    path: 'customer', // Populate the customer field
-                    select: 'fullName profilePic', // Select only the fullName of the customer
+                    path: 'customer',
+                    select: 'fullName profilePic',
                 }
             })
+            .populate('services.subServices') // Populate subServices if they are references
             .exec();
 
+        // If no shop is found
         if (!shop) {
             return sendGeneralResponse(res, false, "Shop not found", 404);
         }
 
-        // Constructing the shop details response
-        const shops = {
-            images: shop.shop_images,
+        // Construct the response data
+        const shopData = {
+            images: shop.shop_images || [],
             barbers: shop.barbers.map(barber => ({
                 id: barber._id,
                 name: barber.fullName,
@@ -41,7 +46,7 @@ const shopdetails = async (req, res) => {
             About: {
                 Shop_Name: shop.name,
                 Location: shop.address,
-                Time: shop.time,
+                Time: shop.operatingHours,
                 Rating: shop.rating,
                 Contact: shop.contactNumber,
                 Working_Days_Time: shop.operatingHours,
@@ -49,32 +54,47 @@ const shopdetails = async (req, res) => {
             },
             services: shop.services.map(service => ({
                 serviceName: service.serviceName,
-                subServiceCount: service.subServices.length, // Count the number of sub-services
-                subServices: service.subServices, // Include sub-services if needed
+                subServiceCount: service.subServices.length,
+                subServices: service.subServices.map(subService => ({
+                    name: subService.name,
+                    price: subService.price,
+                    description: subService.description,
+                    img: subService.img
+                })),
             })),
-            packages: shop.services.flatMap(service => service.subServices), // Flattening sub-services into packages
-            reviews: shop.reviews.map(re => ({
-                id: re._id,
-                Customer: re.customer.fullName,
-                Customer_pic: re.customer.profilePic,
-                Comment: re.review,
-                Rating: re.rating,
-                Likes: re.likes,
-            })) || [], // Assuming reviews are stored in the shop document
-            gallery: shop.gallery,
+            // Corrected packages section
+            packages: shop.services.map(service => ({
+                serviceName: service.serviceName,
+                description: service.description || "No Special offer",
+                rate: service.rate
+            })),
+            // Booknow section with corrected subService mapping
+            booknow: shop.services.map(service => ({
+                Shop_Name: shop.name,
+                ServiceName: service.serviceName,
+                fulldescription: service.fulldescription || "No Description",
+                SubServices: service.subServices.map(subService => ({
+                    SubServiceName: subService.subServiceName,
+                }))
+            })),
+            reviews: shop.reviews.map(review => ({
+                id: review._id,
+                Customer: review.customer.fullName,
+                Customer_pic: review.customer.profilePic,
+                Comment: review.review,
+                Rating: review.rating,
+                Likes: review.likes,
+            })) || [],
+            gallery: shop.gallery || [],
         };
 
-        return sendGeneralResponse(res, true, 'data', 200, shops);
+        // Send the successful response
+        return sendGeneralResponse(res, true, 'Shop details fetched successfully', 200, shopData);
     } catch (error) {
-        sendGeneralResponse(res, false, 'Error fetching shop details', 500, error.message);
+        // Catch any errors and respond
+        return sendGeneralResponse(res, false, 'Error fetching shop details', 500, error.message);
     }
 };
-
-
-
-
-
-
 
 
 const about = async (req, res) => {

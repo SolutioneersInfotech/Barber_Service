@@ -6,6 +6,7 @@ const { getPopularShops } = require('../controller/popular_shops.js');
 const { sendotp } = require("../controller/otp_controller.js");
 const getAdds = require('../controller/adds.js');
 const { shopdetails } = require('../controller/shops_controller.js');
+const { addBookmark,getBookmarkedShops, removeBookmark } = require('../controller/bookmark.js');
 
 const router = express.Router();
 
@@ -18,6 +19,16 @@ router.put('/update_device_token', updateDeviceToken);
 router.post('/send-otp', sendotp);
 router.get('/finduser', finduser); 
 router.get('/getAdds', getAdds); 
+
+//bookmark routes
+
+router.post('/bookmark/:shopId', addBookmark);
+
+// Route to remove a bookmark
+router.delete('/bookmark/:shopId', removeBookmark);
+
+// Route to get all bookmarked shops
+router.get('/bookmark', getBookmarkedShops);
 
 router.get('/shopDetail/:id', shopdetails);
 

@@ -162,4 +162,16 @@ const searchUsers = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers, getUserById, searchUsers, updateUserById, deleteUserById, createUser}
+
+const bookmark = async( req, res)=>{
+  try{
+    const {user_id} = req.params;
+    const bookmark = User.findById(user_id);
+    console.log(bookmark);
+  }
+  catch(error){
+    console.error('Error bookmarking user:', error);
+  }
+}
+
+module.exports = { getAllUsers, getUserById, searchUsers, updateUserById, deleteUserById, createUser,bookmark}

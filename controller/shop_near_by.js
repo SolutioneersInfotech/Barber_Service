@@ -48,7 +48,7 @@ const getNearbyShops = async (req, res) => {
 
         // Fetch all shops
         const shops = await Shop.find({})
-            .select('name ratings address.houseNo address.street address.city address.state address.pin address.latitude address.longitude address.country');
+            .select('name rating address.houseNo address.street address.city address.state address.pin address.latitude address.longitude address.country');
 
         // Calculate distance and sort the shops
         const sortedShops = shops.map(shop => {
