@@ -62,10 +62,8 @@ const userSchema = new Schema({
   },
   profile_img: {
     type: String,
-    default:"https://avatar.iran.liara.run/public/boy?username=Ash",
-    required: true,
-    trim: true,
-  },
+     required: true,
+   },
   token:{
     type:String,
     required: [true],

@@ -1,4 +1,5 @@
 const express = require('express');
+const multer = require('multer');
 const { register, finduser, updateDeviceToken, login, createShop,  } = require('../controller/authcontroller.js');
 const verifyToken = require('../middleware/authmiddleware.js');
 const { getNearbyShops } = require('../controller/shop_near_by.js');
@@ -7,11 +8,12 @@ const { sendotp } = require("../controller/otp_controller.js");
 const getAdds = require('../controller/adds.js');
 const { shopdetails } = require('../controller/shops_controller.js');
 const { addBookmark,getBookmarkedShops, removeBookmark } = require('../controller/bookmark.js');
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router = express.Router();
 
 // Public routes
-router.post('/register', register);
+router.post('/register', upload.single('profile_img'), register);
 router.post('/login',login);
 router.get('/shops/nearBy', getNearbyShops);  
 router.get('/shops/mostPopular', getPopularShops); 
