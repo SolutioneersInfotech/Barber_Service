@@ -6,6 +6,9 @@ const Shop = require('../models/shop_model');
 const otpGenerator = require('otp-generator');
 const { sendGeneralResponse } = require('../utils/responseHelper');
 const { validateRequiredFields } = require('../utils/validators');
+const multer = require('multer');
+const { uploadImage } = require('../utils/uploadImages');
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Function to verify OTP
 const verifyOtp = async (phone, otp) => {
@@ -116,6 +119,10 @@ const register = async (req, res) => {
         return sendGeneralResponse(res, false, 'Invalid phone number', 400);
     }
 
+    if (!req.file) {
+        return sendGeneralResponse(res, false, 'Profile image is required', 400);
+    }
+
     try {
         const existingUser = await User.findOne({ $or: [{ email }, { phone }] });
         if (existingUser) {
@@ -125,7 +132,13 @@ const register = async (req, res) => {
             return sendGeneralResponse(res, false, message.trim(), 400);
         }
 
-        const user = new User({ firstName, lastName, email, phone, DOB, gender, address, profile_img, device_token });
+        let profile_img_url = null;
+
+        if (req.file) {
+            profile_img_url = await uploadImage(req.file.buffer, 'profile_img_' + Date.now());
+        }
+
+        const user = new User({ firstName, lastName, email, phone, DOB, gender, address,  profile_img: profile_img_url , device_token });
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
         user.token = token;
         await user.save();

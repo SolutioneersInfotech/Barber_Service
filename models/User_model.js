@@ -63,7 +63,7 @@ const userSchema = new Schema({
   profile_img: {
     type: String,
     default:"https://avatar.iran.liara.run/public/boy?username=Ash",
-    required: [true, 'profile_img is required'],
+    required: true,
     trim: true,
   },
   token:{
