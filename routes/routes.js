@@ -15,7 +15,7 @@ const router = express.Router();
 // Public routes
 router.post('/register', upload.single('profile_img'), register);
 router.post('/login',login);
-router.get('/shops/nearBy', getNearbyShops);  
+router.get('/shops/nearBy', verifyToken, getNearbyShops);  
 router.get('/shops/mostPopular', getPopularShops); 
 router.put('/update_device_token', updateDeviceToken);  
 router.post('/send-otp', sendotp);
