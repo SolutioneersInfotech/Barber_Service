@@ -198,8 +198,7 @@ const register = async (req, res) => {
         return sendGeneralResponse(res, false, 'Invalid phone number', 400);
     }
 
-    // Check if profile image is provided
-    if (!req.file) {
+     if (!req.file) {
         return sendGeneralResponse(res, false, 'Profile image is required', 400);
     }
 
@@ -221,11 +220,15 @@ const register = async (req, res) => {
 
         // Create and save the user
         const user = new User({ firstName, lastName, email, phone, DOB, gender, address, profile_img: profile_img_url, device_token });
-        // const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
-        // user.token = token;
-        // await user.save();
+        const accessToken = generateAccessToken(user._id);
+        const refreshToken = generateRefreshToken(user._id);
+        
 
-        sendGeneralResponse(res, true, 'Registered successfully', 200, user);
+
+        user.refreshToken = refreshToken;
+        await user.save();
+
+        sendGeneralResponse(res, true, 'Registered successfully', 200,  { user, accessToken , refreshToken });
     } catch (error) {
         if (error.name === 'ValidationError') {
             const messages = Object.values(error.errors).map(err => err.message);
@@ -329,4 +332,57 @@ const validatePhoneNumber = (phone) => /^\+?[1-9]\d{9}$/.test(String(phone));
 
 
 
-module.exports = { login, register, finduser , updateDeviceToken, createShop,  };
+
+
+
+
+
+
+
+
+const getAccessToken = async (req, res) => {
+    const { refreshToken } = req.body;
+
+   
+    if (!refreshToken) {
+      return sendGeneralResponse(res, false, 'Refresh token is missing', 400);
+    }
+  
+    try {
+       
+      const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET_KEY);
+  
+      const user = await User.findById(decoded.id);
+   
+      if (!user || user.refreshToken !== refreshToken) {
+        return sendGeneralResponse(res, false, 'Invalid refresh token', 403);
+      }
+  
+      
+      const newAccessToken = generateAccessToken(user._id);
+      const newRefreshToken = generateRefreshToken(user._id);
+  
+      // Update user's refresh token in the database
+      user.refreshToken = newRefreshToken;
+      await user.save();
+  
+      // Return new access token
+      sendGeneralResponse(res, true, 'Token refreshed successfully', 200, { accessToken: newAccessToken , refreshToken: newRefreshToken });
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      sendGeneralResponse(res, false, 'Invalid or expired refresh token', 403);
+    }
+  };
+  
+
+const generateAccessToken = (userId) => {
+    return jwt.sign({ id: userId }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+  };
+  
+  const generateRefreshToken = (userId) => {
+    return jwt.sign({ id: userId }, process.env.JWT_REFRESH_SECRET_KEY, { expiresIn: '7d' });  
+  };
+
+
+
+module.exports = { login, register, finduser , updateDeviceToken, createShop, getAccessToken };
