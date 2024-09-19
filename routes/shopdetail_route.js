@@ -1,11 +1,13 @@
 const express = require('express');
 const shopController = require('../controller/shops_controller.js')
+const verifyToken = require('../middleware/authmiddleware');
+
 
 const router = express.Router();
 
 
 // router.get('/:id', shopController.shopdetails);
-router.get('/shop/:id', shopController.shopdetails);
+router.get('/shop/:id', verifyToken , shopController.shopdetails);
 
 
 

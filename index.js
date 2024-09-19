@@ -8,18 +8,23 @@ const errorHandler = require('./middleware/errorhandling');
  
 const authRoutes = require('./routes/routes');
 const otpRoutes = require('./routes/otp_routes'); 
-const shopsdetail = require('./routes/shopdetail_route')
+
 const userInfoRoutes = require('./routes/Info_user_route');
+const bookingRoute=require('./routes/booking_route')
 
 //model
-const Review= require('./models/reviews_model')
-const User= require('./models/User_model')
-const Customer = require('./models/cust_models')
-const Shop = require('./models/shop_model')
+// const Review= require('./models/reviews_model')
+// const User= require('./models/User_model')
+// const Customer = require('./models/cust_models')
+// const Shop = require('./models/shop_model')
+
+const customer= require('./controller/customer_controller')
+const review= require('./controller/review_controller')
 
 const session = require('express-session');
 const passport = require('passport');
 const path = require('path');
+const verifyToken = require('./middleware/authmiddleware');
 
 dotenv.config();
 connectDB();
@@ -49,87 +54,14 @@ app.get('', (req, res) => {
   
 app.use('', authRoutes);
   app.use('/users', userInfoRoutes);
- app.use('/shopdetails', shopsdetail);
+ app.use('/bookings', bookingRoute );    // booking is in build 
 
 // Middleware for error handling
 app.use(errorHandler);
 
-app.post('/customer', async(req,res)=>{
-    try {
-        const customer = new Customer(req.body);
-        await customer.save();
-        res.status(201).json({
-            success: true,
-            message: 'Customer created successfully',
-            data: customer
-        });
-    } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: 'Error creating customer',
-            error: error.message
-        });
-    }
-})
+app.post('/customer', customer.create )
 
-app.post('/review', async (req, res) => {
-    try {
-        const { shop, customer, barber, rating, review, likes } = req.body;
-
-        // Validate required fields
-        if (!shop || !customer || !rating || !review) {
-            return res.status(400).json({
-                success: false,
-                message: 'All fields are required: shop, customer, rating, and review'
-            });
-        }
-
-        // Validate rating (should be between 1 and 5)
-        if (typeof rating !== 'number' || rating < 1 || rating > 5) {
-            return res.status(400).json({
-                success: false,
-                message: 'Rating must be a number between 1 and 5'
-            });
-        }
-
-        // Check if the customer has already reviewed the shop
-        const existingReview = await Review.findOne({ shop, customer });
-        if (existingReview) {
-            return res.status(400).json({
-                success: false,
-                message: 'Customer has already submitted a review for this shop'
-            });
-        }
-
-        // Create a new review
-        const newReview = new Review({
-            shop,
-            customer,
-            barber,
-            rating,
-            review,
-            likes: likes || 0 // Default likes to 0 if not provided
-        });
-
-        // Save the review to the database
-        await newReview.save();
-
-        // Send a success response
-        return res.status(201).json({
-            success: true,
-            message: 'Review created successfully',
-            review: newReview
-        });
-
-    } catch (error) {
-        // Send an error response
-        return res.status(500).json({
-            success: false,
-            message: 'Error creating review',
-            error: error.message
-        });
-    }
-});
+app.post('/review', review.create  )
 
 
 

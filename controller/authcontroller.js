@@ -8,6 +8,7 @@ const { sendGeneralResponse } = require('../utils/responseHelper');
 const { validateRequiredFields } = require('../utils/validators');
 const multer = require('multer');
 const { uploadImage } = require('../utils/uploadImages');
+const { generateRefreshToken } = require('../middleware/authmiddleware');
 const upload = multer({ storage: multer.memoryStorage() });
 
 // Function to verify OTP
@@ -83,12 +84,32 @@ const login = async (req, res) => {
 
         if (verificationResult.status) {
             const user = await User.findOne({ phone });
-
-            if (user) {
-                return sendGeneralResponse(res, true, 'Login successful', 200, user);
-            } else {
+            if (!user) {
                 return sendGeneralResponse(res, false, 'User not registered', 400);
             }
+
+            // Generate JWT token
+            const auth_token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, {
+                expiresIn: '1h',
+            });
+
+            // Generate Refresh Token
+            const refreshToken = crypto.randomBytes(64).toString('hex');
+
+            // Update the user with the refresh token
+            user.token = refreshToken;
+            await user.save();
+
+            // Set the refresh token in a cookie
+            res.cookie('Auth_Token', auth_token, {
+                httpOnly: true, // Prevents client-side access
+                secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+                sameSite: 'Strict', // CSRF protection
+                maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+            });
+
+            // Send response with JWT token
+            return sendGeneralResponse(res, true, 'Login successful', 200, { token });
         } else {
             return sendGeneralResponse(res, false, verificationResult.message, 400);
         }
@@ -200,9 +221,9 @@ const register = async (req, res) => {
 
         // Create and save the user
         const user = new User({ firstName, lastName, email, phone, DOB, gender, address, profile_img: profile_img_url, device_token });
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
-        user.token = token;
-        await user.save();
+        // const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+        // user.token = token;
+        // await user.save();
 
         sendGeneralResponse(res, true, 'Registered successfully', 200, user);
     } catch (error) {

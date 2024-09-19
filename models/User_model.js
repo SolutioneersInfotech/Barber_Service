@@ -79,11 +79,11 @@ const userSchema = new Schema({
   timestamps: true
 });
 
-// Token generation method
-userSchema.methods.generateToken = function () {
-  const token = jwt.sign({ id: this._id }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
-  return token;
-};
+// // Token generation method
+// userSchema.methods.generateToken = function () {
+//   const token = jwt.sign({ id: this._id }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+//   return token;
+// };
 
 const User = mongoose.model('User', userSchema);
 

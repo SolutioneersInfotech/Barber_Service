@@ -37,6 +37,7 @@ const shopdetails = async (req, res) => {
         const reviews = await Review.find({ shop: shopId })
             .populate('customer', 'fullName profilePic')
             .exec();
+
         const counts = await Review.aggregate([
             {
                 $group: {

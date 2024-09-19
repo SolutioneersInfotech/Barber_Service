@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const { register, finduser, updateDeviceToken, login, createShop,  } = require('../controller/authcontroller.js');
-const verifyToken = require('../middleware/authmiddleware.js');
+const verifyToken  = require('../middleware/authmiddleware.js');
 const { getNearbyShops } = require('../controller/shop_near_by.js');
 const { getPopularShops } = require('../controller/popular_shops.js');
 const { sendotp } = require("../controller/otp_controller.js");
@@ -22,6 +22,13 @@ router.post('/send-otp', sendotp);
 router.get('/finduser', finduser); 
 router.get('/getAdds', getAdds); 
 
+
+//shop routes
+router.get('/shopDetail/:id',verifyToken, shopdetails);
+router.post('/createshop', createShop);
+
+
+
 //bookmark routes
 
 router.post('/bookmark/:shopId', addBookmark);
@@ -32,9 +39,7 @@ router.delete('/bookmark/:shopId', removeBookmark);
 // Route to get all bookmarked shops
 router.get('/bookmark', getBookmarkedShops);
 
-router.get('/shopDetail/:id', shopdetails);
 
- router.post('/createshop', createShop);
 
  
  
