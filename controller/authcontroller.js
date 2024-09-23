@@ -8,7 +8,7 @@ const { sendGeneralResponse } = require('../utils/responseHelper');
 const { validateRequiredFields } = require('../utils/validators');
 const multer = require('multer');
 const { uploadImage } = require('../utils/uploadImages');
-const { generateRefreshToken } = require('../middleware/authmiddleware');
+
 const upload = multer({ storage: multer.memoryStorage() });
 
 // Function to verify OTP
@@ -88,28 +88,24 @@ const login = async (req, res) => {
                 return sendGeneralResponse(res, false, 'User not registered', 400);
             }
 
-            // Generate JWT token
-            const auth_token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, {
-                expiresIn: '1h',
-            });
-
-            // Generate Refresh Token
-            const refreshToken = crypto.randomBytes(64).toString('hex');
-
-            // Update the user with the refresh token
-            user.token = refreshToken;
+            const accessToken = generateAccessToken(user._id);
+            const refreshToken = generateRefreshToken(user._id);
+            
+    
+    
+            user.refreshToken = refreshToken;
             await user.save();
-
-            // Set the refresh token in a cookie
-            res.cookie('Auth_Token', auth_token, {
-                httpOnly: true, // Prevents client-side access
-                secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-                sameSite: 'Strict', // CSRF protection
-                maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-            });
+    
+            // // Set the refresh token in a cookie
+            // res.cookie('Auth_Token', auth_token, {
+            //     httpOnly: true, // Prevents client-side access
+            //     secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+            //     sameSite: 'Strict', // CSRF protection
+            //     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+            // });
 
             // Send response with JWT token
-            return sendGeneralResponse(res, true, 'Login successful', 200, { token });
+            return sendGeneralResponse(res, true, 'Login successful', 200, { user,accessToken });
         } else {
             return sendGeneralResponse(res, false, verificationResult.message, 400);
         }
@@ -228,7 +224,7 @@ const register = async (req, res) => {
         user.refreshToken = refreshToken;
         await user.save();
 
-        sendGeneralResponse(res, true, 'Registered successfully', 200,  { user, accessToken , refreshToken });
+        sendGeneralResponse(res, true, 'Registered successfully', 200,  { user, accessToken});
     } catch (error) {
         if (error.name === 'ValidationError') {
             const messages = Object.values(error.errors).map(err => err.message);
@@ -386,3 +382,4 @@ const generateAccessToken = (userId) => {
 
 
 module.exports = { login, register, finduser , updateDeviceToken, createShop, getAccessToken };
+ 

@@ -64,7 +64,7 @@ const userSchema = new Schema({
     type: String,
      required: true,
    },
-  token:{
+   refreshToken:{
     type:String,
     required: [true],
     trim: true,
