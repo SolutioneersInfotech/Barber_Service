@@ -46,7 +46,7 @@ const { sendSMS } = require('../utils/sms');
 
 
 
-         const otpMessage = `Hi welcome to Salon App! Your OTP is: ${otp}`;  
+         const otpMessage = `${otp}`;  
          const otpResult = await sendSMS(phone, otpMessage);
          
          
