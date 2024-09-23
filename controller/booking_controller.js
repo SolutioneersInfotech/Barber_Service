@@ -72,7 +72,7 @@ const createBooking = async (req, res) => {
                 payment_id,
                 booking_id
             },
-            details: { additional_info }
+            details: { additional_info } 
         });
 
         await newBooking.save();
