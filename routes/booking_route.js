@@ -1,24 +1,11 @@
-const express = require('express')
-const bookingController= require('../controller/booking_controller')
-const verifyToken= require('../middleware/authmiddleware')
-const router= express.Router();
+const express = require('express');
+const router = express.Router();
+const bookingController = require('../controller/booking_controller');
 
-
-// Upcoming bookings
-router.get('/upcoming', verifyToken,bookingController.getUpcomingBookings);
-
-// Completed bookings
-router.get('/completed', bookingController.getCompletedBookings);
-
-router.post('/book', bookingController.createBooking)
-
-// Cancelled bookings
-router.get('/cancelled', bookingController.getCancelledBookings);
-
-router.put('/cancel/:transactionId', bookingController.cancelTransaction);
-router.put('/post/:transactionId', bookingController.postTransaction);
-router.get('/view/:transactionId', bookingController.viewTransaction);
-router.get('/ereceipt/:transactionId', bookingController.generateEReceipt);
-
+router.post('/', bookingController.createBooking);
+router.get('/', bookingController.getAllBookings);
+router.get('/:id', bookingController.getBookingById);
+router.put('/:id', bookingController.updateBooking);
+router.delete('/:id', bookingController.deleteBooking);
 
 module.exports = router;

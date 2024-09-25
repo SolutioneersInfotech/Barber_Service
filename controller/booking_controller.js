@@ -1,220 +1,99 @@
-const Booking=require('../models/booking_model')
-const getUpcomingBookings = async (req, res) => {
-    try {
-        const userId = req.body.userId; // Assuming userId is passed in the body
+const Booking = require('../models/booking_model');
+const { body, validationResult } = require('express-validator');
+const { v4: uuidv4 } = require('uuid');
 
-        if (!userId) {
-            return res.status(400).json({ success: false, message: 'User ID is required.' });
+// Create a new booking
+exports.createBooking = [
+    body('user_id').isMongoId().withMessage('User ID must be a valid MongoDB Object ID'),
+    body('service_id').isMongoId().withMessage('Service ID must be a valid MongoDB Object ID'),
+    body('provider_id').isMongoId().withMessage('Provider ID must be a valid MongoDB Object ID'),
+    body('booking_date').isISO8601().toDate().withMessage('Booking date must be a valid date'),
+    body('booking_status').isIn(['confirmed', 'completed', 'cancelled', 'pending']).withMessage('Invalid booking status'),
+    body('payment.amount').isNumeric().withMessage('Payment amount must be a number'),
+    body('payment.currency').isString().withMessage('Currency must be a string'),
+    body('payment_method').isIn(['credit_card', 'paypal', 'bank_transfer']).withMessage('Invalid payment method'),
+    body('payment_status').isIn(['paid', 'pending', 'failed']).withMessage('Invalid payment status'),
+    body('payment.transaction_id').isString().withMessage('Transaction ID must be a string'),
+    body('payment.payment_date').isISO8601().toDate().withMessage('Payment date must be a valid date'),
+    body('payment.payment_id').isString().withMessage('Payment ID must be a string'),
+
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
         }
-        const upcomingBookings = await Booking.find({
-            user_id:userId,
-            booking_status: { $in: ['confirmed', 'pending'] },
-            booking_date: { $gte: new Date() } // Only future dates
-        }).populate('shop.services');
 
-        console.log('User ID:', req.userId); // Optional: log for debugging
+        try {
+            const newBooking = new Booking({
+                ...req.body,
+                payment: {
+                    ...req.body.payment,
+                    booking_id: uuidv4() // Generate unique booking ID
+                }
+            });
 
-        res.status(200).json({ success: true, data: upcomingBookings });
+            const savedBooking = await newBooking.save();
+            res.status(201).json(savedBooking);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+];
+
+// Get all bookings
+exports.getAllBookings = async (req, res) => {
+    try {
+        const bookings = await Booking.find().populate('user_id service_id provider_id');
+        res.status(200).json(bookings);
     } catch (error) {
-        console.error('Error fetching upcoming bookings:', error); // Log the error for debugging
-        res.status(500).json({ success: false, message: error.message });
+        res.status(500).json({ message: error.message });
     }
 };
 
-// Get completed bookings
-const getCompletedBookings = async (req, res) => {
+// Get a booking by ID
+exports.getBookingById = async (req, res) => {
     try {
-        const completedBookings = await Booking.find({
-            user_id: req.user._id,
-            booking_status: 'completed'
-        }).populate('service_id provider_id');
-
-        res.status(200).json({ success: true, data: completedBookings });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-};
-
-// Get cancelled bookings
-const getCancelledBookings = async (req, res) => {
-    try {
-        const cancelledBookings = await Booking.find({
-            user_id: req.user._id,
-            booking_status: 'cancelled'
-        }).populate('service_id provider_id');
-
-        res.status(200).json({ success: true, data: cancelledBookings });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-};
-
-
-
-const createBooking = async (req, res) => {
-    try {
-        const { user_id, service_id, provider_id, booking_date, amount, currency, payment_method, transaction_id, payment_id, booking_id, additional_info } = req.body;
-
-        // Create new booking
-        const newBooking = new Booking({
-            user_id,
-            service_id,
-            provider_id,
-            booking_date,
-            booking_status: 'pending', // Initially setting the status to 'pending'
-            payment: {
-                amount,
-                currency,
-                payment_method,
-                payment_status: 'pending', // Initially setting payment status to 'pending'
-                transaction_id,
-                payment_date: new Date(), // Assuming payment is done at the time of booking
-                payment_id,
-                booking_id
-            },
-            details: { additional_info }
-        });
-
-        await newBooking.save();
-        return res.status(201).json({ success: true, message: 'Booking created successfully', booking: newBooking });
-    } catch (error) {
-        console.error('Error creating booking:', error);
-        return res.status(500).json({ success: false, message: 'Internal server error' });
-    }
-};
-
-
-const cancelBooking = async (req, res) => {
-    try {
-        const { bookingId } = req.params;
-
-        // Find booking by ID and update the status to 'cancelled'
-        const booking = await Booking.findById(bookingId);
+        const booking = await Booking.findById(req.params.id).populate('user_id service_id provider_id');
         if (!booking) {
-            return res.status(404).json({ success: false, message: 'Booking not found' });
+            return res.status(404).json({ message: 'Booking not found' });
         }
-
-        booking.booking_status = 'cancelled';
-        booking.payment.payment_status = 'failed'; // Assuming payment is failed on cancellation
-        await booking.save();
-
-        return res.status(200).json({ success: true, message: 'Booking cancelled successfully', booking });
+        res.status(200).json(booking);
     } catch (error) {
-        console.error('Error cancelling booking:', error);
-        return res.status(500).json({ success: false, message: 'Internal server error' });
+        res.status(500).json({ message: error.message });
     }
 };
 
+// Update a booking by ID
+exports.updateBooking = [
+    body('booking_status').optional().isIn(['confirmed', 'completed', 'cancelled', 'pending']).withMessage('Invalid booking status'),
 
-// Cancel a transaction
-const cancelTransaction = async (req, res) => {
-    const { transactionId } = req.params;
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
 
+        try {
+            const updatedBooking = await Booking.findByIdAndUpdate(req.params.id, req.body, { new: true });
+            if (!updatedBooking) {
+                return res.status(404).json({ message: 'Booking not found' });
+            }
+            res.status(200).json(updatedBooking);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+];
+
+// Delete a booking by ID
+exports.deleteBooking = async (req, res) => {
     try {
-        const transaction = await Transaction.findById(transactionId);
-
-        if (!transaction) {
-            return res.status(404).json({ message: 'Transaction not found' });
+        const deletedBooking = await Booking.findByIdAndDelete(req.params.id);
+        if (!deletedBooking) {
+            return res.status(404).json({ message: 'Booking not found' });
         }
-
-        if (transaction.status === 'canceled') {
-            return res.status(400).json({ message: 'Transaction is already canceled' });
-        }
-
-        transaction.status = 'canceled';
-        await transaction.save();
-
-        res.status(200).json({ message: 'Transaction canceled successfully', transaction });
+        res.status(204).json();
     } catch (error) {
-        console.error('Cancel transaction error:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: error.message });
     }
-};
-
-// Post a transaction
-const postTransaction = async (req, res) => {
-    const { transactionId } = req.params;
-
-    try {
-        const transaction = await Transaction.findById(transactionId);
-
-        if (!transaction) {
-            return res.status(404).json({ message: 'Transaction not found' });
-        }
-
-        if (transaction.status === 'posted') {
-            return res.status(400).json({ message: 'Transaction is already posted' });
-        }
-
-        transaction.status = 'posted';
-        await transaction.save();
-
-        res.status(200).json({ message: 'Transaction posted successfully', transaction });
-    } catch (error) {
-        console.error('Post transaction error:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-};
-
-// View transaction details
-const viewTransaction = async (req, res) => {
-    const { transactionId } = req.params;
-
-    try {
-        const transaction = await Transaction.findById(transactionId);
-
-        if (!transaction) {
-            return res.status(404).json({ message: 'Transaction not found' });
-        }
-
-        res.status(200).json({ transaction });
-    } catch (error) {
-        console.error('View transaction error:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-};
-
-
-// Generate e-receipt for a transaction
-const generateEReceipt = async (req, res) => {
-    try {
-        const { bookingId } = req.params;
-
-        // Find booking by ID
-        const booking = await Booking.findById(bookingId).populate('user_id service_id provider_id');
-        if (!booking) {
-            return res.status(404).json({ success: false, message: 'Booking not found' });
-        }
-
-        // Format receipt data
-        const receipt = {
-            booking_id: booking._id,
-            user: booking.user_id,
-            service: booking.service_id,
-            provider: booking.provider_id,
-            booking_date: booking.booking_date,
-            booking_status: booking.booking_status,
-            payment: booking.payment,
-            details: booking.details
-        };
-
-        return res.status(200).json({ success: true, message: 'Receipt retrieved successfully', receipt });
-    } catch (error) {
-        console.error('Error viewing receipt:', error);
-        return res.status(500).json({ success: false, message: 'Internal server error' });
-    }
-};
-
-
-
-module.exports = {
-    getUpcomingBookings,
-    getCompletedBookings,
-    getCancelledBookings,
-    viewTransaction,
-    cancelTransaction,
-    postTransaction,
-    cancelBooking, 
-    generateEReceipt,
-    createBooking
 };
