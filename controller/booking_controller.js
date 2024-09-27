@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 
 // Create a new booking
 exports.createBooking = [
+    // Validation rules
     body('user_id').isMongoId().withMessage('User ID must be a valid MongoDB Object ID'),
     body('service_id').isMongoId().withMessage('Service ID must be a valid MongoDB Object ID'),
     body('provider_id').isMongoId().withMessage('Provider ID must be a valid MongoDB Object ID'),
@@ -24,6 +25,7 @@ exports.createBooking = [
         }
 
         try {
+            // Create new booking
             const newBooking = new Booking({
                 ...req.body,
                 payment: {
@@ -32,10 +34,11 @@ exports.createBooking = [
                 }
             });
 
+            // Save the booking to the database
             const savedBooking = await newBooking.save();
-            res.status(201).json(savedBooking);
+            res.status(201).json({ success: true, booking: savedBooking });
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            res.status(500).json({ success: false, message: error.message });
         }
     }
 ];
@@ -43,65 +46,31 @@ exports.createBooking = [
 // Get all bookings
 exports.getAllBookings = async (req, res) => {
     try {
-        const cancelledBookings = await Booking.find({
-            user_id: req.user._id,
-            booking_status: 'cancelled'
-        }).populate('service_id provider_id');
-
-        res.status(200).json({ success: true, data: cancelledBookings });
+        const bookings = await Booking.find()
+            .populate('user_id service_id provider_id');
+        res.status(200).json({ success: true, bookings });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
-    }
-};
-
-
-
-const createBooking = async (req, res) => {
-    try {
-        const { user_id, service_id, provider_id, booking_date, amount, currency, payment_method, transaction_id, payment_id, booking_id, additional_info } = req.body;
-
-        // Create new booking
-        const newBooking = new Booking({
-            user_id,
-            service_id,
-            provider_id,
-            booking_date,
-            booking_status: 'pending', // Initially setting the status to 'pending'
-            payment: {
-                amount,
-                currency,
-                payment_method,
-                payment_status: 'pending', // Initially setting payment status to 'pending'
-                transaction_id,
-                payment_date: new Date(), // Assuming payment is done at the time of booking
-                payment_id,
-                booking_id
-            },
-            details: { additional_info } 
-        });
-
-        await newBooking.save();
-        return res.status(201).json({ success: true, message: 'Booking created successfully', booking: newBooking });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
     }
 };
 
 // Get a booking by ID
 exports.getBookingById = async (req, res) => {
     try {
-        const booking = await Booking.findById(req.params.id).populate('user_id service_id provider_id');
+        const booking = await Booking.findById(req.params.id)
+            .populate('user_id service_id provider_id');
         if (!booking) {
-            return res.status(404).json({ message: 'Booking not found' });
+            return res.status(404).json({ success: false, message: 'Booking not found' });
         }
-        res.status(200).json(booking);
+        res.status(200).json({ success: true, booking });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
 // Update a booking by ID
 exports.updateBooking = [
+    // Validation rules for status update
     body('booking_status').optional().isIn(['confirmed', 'completed', 'cancelled', 'pending']).withMessage('Invalid booking status'),
 
     async (req, res) => {
@@ -113,11 +82,11 @@ exports.updateBooking = [
         try {
             const updatedBooking = await Booking.findByIdAndUpdate(req.params.id, req.body, { new: true });
             if (!updatedBooking) {
-                return res.status(404).json({ message: 'Booking not found' });
+                return res.status(404).json({ success: false, message: 'Booking not found' });
             }
-            res.status(200).json(updatedBooking);
+            res.status(200).json({ success: true, booking: updatedBooking });
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            res.status(500).json({ success: false, message: error.message });
         }
     }
 ];
@@ -127,61 +96,51 @@ exports.deleteBooking = async (req, res) => {
     try {
         const deletedBooking = await Booking.findByIdAndDelete(req.params.id);
         if (!deletedBooking) {
-            return res.status(404).json({ message: 'Booking not found' });
+            return res.status(404).json({ success: false, message: 'Booking not found' });
         }
         res.status(204).json();
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-
-
-// Get all booking history for a user
-exports.getBookingHistory = async (req, res) => {
-    try {
-        const userId = req.user._id; // Assuming the user is authenticated and user_id is available
-
-        // Find all bookings for the authenticated user
-        const bookingHistory = await Booking.find({ user_id: userId })
-            .populate('service_id provider_id')
-            .sort({ booking_date: -1 }); // Sort by booking date in descending order (latest first)
-
-        if (!bookingHistory || bookingHistory.length === 0) {
-            return res.status(404).json({ message: 'No booking history found' });
-        }
-
-        res.status(200).json({ success: true, data: bookingHistory });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// Get booking history filtered by status (e.g., 'confirmed', 'completed', 'cancelled')
-exports.getBookingHistoryByStatus = async (req, res) => {
+// Get all booking history for a user
+exports.getBookingHistory = async (req, res) => {
     try {
-        const userId = req.user._id; // Assuming the user is authenticated and user_id is available
-        const { status } = req.params; // Extract status from the request params
-
-        // Validate status
-        const validStatuses = ['confirmed', 'completed', 'cancelled', 'pending'];
-        if (!validStatuses.includes(status)) {
-            return res.status(400).json({ message: 'Invalid booking status' });
-        }
-
-        // Find bookings based on status for the user
-        const bookingHistory = await Booking.find({
-            user_id: userId,
-            booking_status: status
-        })
+        const { userId } = req.params;
+        const bookingHistory = await Booking.find({ user_id: userId })
             .populate('service_id provider_id')
             .sort({ booking_date: -1 });
 
         if (!bookingHistory || bookingHistory.length === 0) {
-            return res.status(404).json({ message: `No ${status} bookings found` });
+            return res.status(404).json({ success: false, message: 'No booking history found' });
         }
 
-        res.status(200).json({ success: true, data: bookingHistory });
+        res.status(200).json({ success: true, bookings: bookingHistory });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Get booking history filtered by status
+exports.getBookingHistoryByStatus = async (req, res) => {
+    try {
+        const { status } = req.params;
+        const validStatuses = ['confirmed', 'completed', 'cancelled', 'pending'];
+
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ success: false, message: 'Invalid booking status' });
+        }
+
+        const bookingHistory = await Booking.find({ booking_status: status })
+            .populate('service_id provider_id')
+            .sort({ booking_date: -1 });
+
+        if (!bookingHistory || bookingHistory.length === 0) {
+            return res.status(404).json({ success: false, message: `No bookings with status '${status}' found` });
+        }
+
+        res.status(200).json({ success: true, bookings: bookingHistory });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
