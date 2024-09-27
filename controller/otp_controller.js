@@ -43,26 +43,7 @@ const bcrypt = require('bcrypt');
     
           const subject = 'Your OTP Code';
       
-        //   const html = `
-        //       <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;">
-        //           <div style="background-color: white; max-width: 600px; margin: 20px auto; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-        //               <div style="background-color: #4CAF50; padding: 10px; color: white; text-align: center; border-radius: 10px 10px 0 0;">
-        //                   <h1>Your OTP Code</h1>
-        //               </div>
-        //               <div style="padding: 20px;">
-        //                   <h2 style="color: #333;">Hello!</h2>
-        //                   <p>Your One-Time Password (OTP) is:</p>
-        //                   <h1 style="font-size: 2em; color: #4CAF50;">${otp}</h1>
-        //                   <p>This OTP is valid for the next 15 minutes. Please enter it on the verification page to proceed.</p>
-        //                   <p>If you did not request this OTP, please ignore this email.</p>
-        //               </div>
-        //               <div style="margin-top: 20px; text-align: center; color: #777; font-size: 12px;">
-        //                   <p>&copy; 2024 Our Service. All Rights Reserved.</p>
-        //               </div>
-        //           </div>
-        //       </div>
-        //   `;
-  
+        
 
 
         const html = `
