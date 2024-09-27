@@ -4,7 +4,7 @@ const { register, finduser, updateDeviceToken, login, createShop, getAccessToken
 const verifyToken  = require('../middleware/authmiddleware.js');
 const { getNearbyShops } = require('../controller/shop_near_by.js');
 const { getPopularShops } = require('../controller/popular_shops.js');
-const { sendotp } = require("../controller/otp_controller.js");
+const {  sendPhoneOtp, sendEmailOtp, verifyEmailOtp } = require("../controller/otp_controller.js");
 const getAdds = require('../controller/adds.js');
 const { shopdetails} = require('../controller/shops_controller.js');
 const { addBookmark,getBookmarkedShops, removeBookmark } = require('../controller/bookmark.js');
@@ -18,7 +18,15 @@ router.post('/login',login);
 router.get('/shops/nearBy', verifyToken, getNearbyShops);  
 router.get('/shops/mostPopular', getPopularShops); 
 router.put('/update_device_token', updateDeviceToken);  
-router.post('/send-otp', sendotp);
+// router.post('/send-otp', sendotp);
+router.post("/sendEmailOtp", sendEmailOtp);
+router.post("/verifyEmailOtp", verifyEmailOtp);
+
+router.post("/sendPhoneOtp", sendPhoneOtp);
+
+
+
+
 router.get('/finduser', finduser); 
 router.get('/getAdds', getAdds); 
 router.post('/getNewAccessToken', getAccessToken

@@ -8,79 +8,43 @@ const { sendGeneralResponse } = require('../utils/responseHelper');
 const { validateRequiredFields } = require('../utils/validators');
 const multer = require('multer');
 const { uploadImage } = require('../utils/uploadImages');
+const { verifyPhoneOtp } = require('./otp_controller');
+const { sendMail } = require('../utils/mailer');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Function to verify OTP
-const verifyOtp = async (phone, otp) => {
-    try {
-        const otpRecord = await Otp.findOne({ phone });
-
-        if (!otpRecord) {
-            return {
-                status: false,
-                message: 'Again send OTP',
-                data: []
-            };
-        }
-
-        const { otp: storedOtp, otpExpiration } = otpRecord;
-
-        if (storedOtp !== otp) {
-            return {
-                status: false,
-                message: 'Incorrect OTP',
-                data: []
-            };
-        }
-
-        if (new Date() > otpExpiration) {
-            return {
-                status: false,
-                message: 'OTP expired',
-                data: []
-            };
-        }
-
-        return {
-            status: true,
-            message: 'Verified successfully',
-            data: []
-        };
-    } catch (error) {
-        console.error('OTP verification error:', error);
-        return {
-            status: false,
-            message: 'Internal server error',
-            data: []
-        };
-    }
-};
+ 
 
 
 
 // user  Login 
 const login = async (req, res) => {
     const { phone, otp } = req.body;
+    console.log("asasas");
 
     if (!phone) {
         return sendGeneralResponse(res, false, "Phone number field is required", 400);
     }
+ 
 
-    if (phone.length !== 10 || !/^\d{10}$/.test(phone)) {
-        return sendGeneralResponse(res, false, "Invalid phone number", 400);
+
+
+    if (!validatePhoneNumber(phone)) {
+        return sendGeneralResponse(res, false, 'Invalid phone number', 400);
     }
 
     if (!otp) {
         return sendGeneralResponse(res, false, "OTP field is required", 400);
     }
+ 
+    const trimmedOtp = otp.trim();
 
-    if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+    if (trimmedOtp.length !== 6 || !/^\d{6}$/.test(trimmedOtp)) {
         return sendGeneralResponse(res, false, "Invalid OTP", 400);
     }
-
+ 
     try {
-        const verificationResult = await verifyOtp(phone, otp);
+        const verificationResult = await verifyPhoneOtp(phone, otp);
 
         if (verificationResult.status) {
             const user = await User.findOne({ phone });
@@ -96,15 +60,7 @@ const login = async (req, res) => {
             user.refreshToken = refreshToken;
             await user.save();
     
-            // // Set the refresh token in a cookie
-            // res.cookie('Auth_Token', auth_token, {
-            //     httpOnly: true, // Prevents client-side access
-            //     secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-            //     sameSite: 'Strict', // CSRF protection
-            //     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-            // });
-
-            // Send response with JWT token
+           
             return sendGeneralResponse(res, true, 'Login successful', 200, { user,accessToken });
         } else {
             return sendGeneralResponse(res, false, verificationResult.message, 400);
@@ -224,7 +180,83 @@ const register = async (req, res) => {
         user.refreshToken = refreshToken;
         await user.save();
 
+        const subject = 'Welcome to Solutioneers Infotech!';
+ 
+    //     const html = `
+    //     <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;">
+    //         <div style="background-color: white; max-width: 600px; margin: 20px auto; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+    //             <div style="background-color: #FFB6C1; padding: 10px; color: white; text-align: center; border-radius: 10px 10px 0 0;">
+    //                 <h1>Welcome to Our Service!</h1>
+    //             </div>
+    //             <div style="padding: 20px;">
+    //                 <h2 style="color: #333;">Hello, ${firstName}  ${lastName} ji!</h2>
+    //                 <p>We are thrilled to have you on board. Thank you for registering with us!</p>
+    //                 <p>You can now start using all the services we offer. If you have any questions, feel free to reach out to our support team.</p>
+    //                 <p>We hope you have a great experience with us!</p>
+    //                 <a href="https://yourwebsite.com" style="display: inline-block; background-color: #FFB6C1; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; margin-top: 20px;">Visit Our Website</a>
+    //                 <p style="margin-top: 20px;">Follow us on social media:</p>
+    //                 <div style="text-align: center; margin-top: 10px;"> 
+    //                     <a href="https://www.facebook.com/yourpage" style="margin-right: 10px;">
+    //                         <img src="https://img.icons8.com/ios-filled/24/FF69B4/facebook-new.png" alt="Facebook" />
+    //                     </a>
+    //                     <a href="https://www.instagram.com/yourpage" style="margin-right: 10px;">
+    //                         <img src="https://img.icons8.com/ios-filled/24/FF69B4/instagram-new.png" alt="Instagram" />
+    //                     </a>
+    //                     <a href="mailto:support@yourservice.com">
+    //                         <img src="https://img.icons8.com/ios-filled/24/FF69B4/support.png" alt="Support" />
+    //                     </a>
+
+    //                          <div style="margin-top: 20px; text-align: center; color: #777; font-size: 12px;">
+    //                 <p>&copy; 2024 Our Service. All Rights Reserved.</p>
+    //             </div>
+    //                 </div>
+    //             </div>
+                
+    //         </div>
+    //     </div>
+    // `;
+
+
+
+    const html = `
+    <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;">
+        <div style="background-color: white; max-width: 600px; margin: 20px auto; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+            <div style="background-color: rgb(255, 151, 5); padding: 10px; color: white; text-align: center; border-radius: 10px 10px 0 0;">
+                <h1>Welcome to Our Service!</h1>
+            </div>
+            <div style="padding: 20px; background-color: rgba(247, 177, 79, 0.1); border-radius: 10px;">
+                <h2 style="color: #333;">Hello, ${firstName} ${lastName} ji!</h2>
+                <p>We are thrilled to have you on board. Thank you for registering with us!</p>
+                <p>You can now start using all the services we offer. If you have any questions, feel free to reach out to our support team.</p>
+                <p>We hope you have a great experience with us!</p>
+                <a href="https://yourwebsite.com" style="display: inline-block; background-color: rgb(255, 151, 5); color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; margin-top: 20px;">Visit Our Website</a>
+                <p style="margin-top: 20px;">Follow us on social media:</p>
+                <div style="text-align: center; margin-top: 10px;"> 
+                    <a href="https://www.facebook.com/yourpage" style="margin-right: 10px;">
+                        <img src="https://img.icons8.com/ios-filled/24/FF69B4/facebook-new.png" alt="Facebook" />
+                    </a>
+                    <a href="https://www.instagram.com/yourpage" style="margin-right: 10px;">
+                        <img src="https://img.icons8.com/ios-filled/24/FF69B4/instagram-new.png" alt="Instagram" />
+                    </a>
+                    <a href="mailto:support@yourservice.com">
+                        <img src="https://img.icons8.com/ios-filled/24/FF69B4/support.png" alt="Support" />
+                    </a>
+                </div>
+                <div style="margin-top: 20px; text-align: center; color: #777; font-size: 12px;">
+                    <p>&copy; 2024 Our Service. All Rights Reserved.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+`;
+
+         await sendMail(email, subject, ``, html);
+        
+
+
         sendGeneralResponse(res, true, 'Registered successfully', 200,  { user, accessToken});
+
+
     } catch (error) {
         if (error.name === 'ValidationError') {
             const messages = Object.values(error.errors).map(err => err.message);
