@@ -43,8 +43,45 @@ exports.createBooking = [
 // Get all bookings
 exports.getAllBookings = async (req, res) => {
     try {
-        const bookings = await Booking.find().populate('user_id service_id provider_id');
-        res.status(200).json(bookings);
+        const cancelledBookings = await Booking.find({
+            user_id: req.user._id,
+            booking_status: 'cancelled'
+        }).populate('service_id provider_id');
+
+        res.status(200).json({ success: true, data: cancelledBookings });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+
+
+const createBooking = async (req, res) => {
+    try {
+        const { user_id, service_id, provider_id, booking_date, amount, currency, payment_method, transaction_id, payment_id, booking_id, additional_info } = req.body;
+
+        // Create new booking
+        const newBooking = new Booking({
+            user_id,
+            service_id,
+            provider_id,
+            booking_date,
+            booking_status: 'pending', // Initially setting the status to 'pending'
+            payment: {
+                amount,
+                currency,
+                payment_method,
+                payment_status: 'pending', // Initially setting payment status to 'pending'
+                transaction_id,
+                payment_date: new Date(), // Assuming payment is done at the time of booking
+                payment_id,
+                booking_id
+            },
+            details: { additional_info } 
+        });
+
+        await newBooking.save();
+        return res.status(201).json({ success: true, message: 'Booking created successfully', booking: newBooking });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const { register, finduser, updateDeviceToken, login, createShop,  } = require('../controller/authcontroller.js');
+const { register, finduser, updateDeviceToken, login, createShop, getAccessToken,  } = require('../controller/authcontroller.js');
 const verifyToken  = require('../middleware/authmiddleware.js');
 const { getNearbyShops } = require('../controller/shop_near_by.js');
 const { getPopularShops } = require('../controller/popular_shops.js');
@@ -21,6 +21,9 @@ router.put('/update_device_token', updateDeviceToken);
 router.post('/send-otp', sendotp);
 router.get('/finduser', finduser); 
 router.get('/getAdds', getAdds); 
+router.post('/getNewAccessToken', getAccessToken
+); 
+
 
 
 //shop routes
