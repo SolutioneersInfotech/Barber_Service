@@ -134,3 +134,55 @@ exports.deleteBooking = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+
+
+// Get all booking history for a user
+exports.getBookingHistory = async (req, res) => {
+    try {
+        const userId = req.user._id; // Assuming the user is authenticated and user_id is available
+
+        // Find all bookings for the authenticated user
+        const bookingHistory = await Booking.find({ user_id: userId })
+            .populate('service_id provider_id')
+            .sort({ booking_date: -1 }); // Sort by booking date in descending order (latest first)
+
+        if (!bookingHistory || bookingHistory.length === 0) {
+            return res.status(404).json({ message: 'No booking history found' });
+        }
+
+        res.status(200).json({ success: true, data: bookingHistory });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Get booking history filtered by status (e.g., 'confirmed', 'completed', 'cancelled')
+exports.getBookingHistoryByStatus = async (req, res) => {
+    try {
+        const userId = req.user._id; // Assuming the user is authenticated and user_id is available
+        const { status } = req.params; // Extract status from the request params
+
+        // Validate status
+        const validStatuses = ['confirmed', 'completed', 'cancelled', 'pending'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ message: 'Invalid booking status' });
+        }
+
+        // Find bookings based on status for the user
+        const bookingHistory = await Booking.find({
+            user_id: userId,
+            booking_status: status
+        })
+            .populate('service_id provider_id')
+            .sort({ booking_date: -1 });
+
+        if (!bookingHistory || bookingHistory.length === 0) {
+            return res.status(404).json({ message: `No ${status} bookings found` });
+        }
+
+        res.status(200).json({ success: true, data: bookingHistory });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
