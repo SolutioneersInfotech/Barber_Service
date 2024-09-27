@@ -31,7 +31,7 @@ const bcrypt = require('bcrypt');
         const otpHash = await bcrypt.hash(otp, 10);
         const expiresAt = Date.now() + 15 * 60 * 1000;
      
-
+ 
         await Otp.deleteMany({ email });
 
 
@@ -128,7 +128,7 @@ const otpEntry = await Otp.findOneAndUpdate(
 
 
   console.log(otp);
-  sendGeneralResponse(res, true, 'OTP sent to phone no ', 200);
+  sendGeneralResponse(res, true, 'OTP sent to phone no ', 200 , {otp});
        } catch (error) {
           console.error('Error sending OTP:', error.message || error);
   sendGeneralResponse(res, false, 'Internal server error', 500);
@@ -136,11 +136,6 @@ const otpEntry = await Otp.findOneAndUpdate(
        }
   };
   
-  
-
- 
-
-
 
 
 
@@ -166,14 +161,14 @@ const verifyEmailOtp = async (req, res) => {
          const otpEntry = await Otp.findOne({ email });
 
         if (!otpEntry) {
-            return sendGeneralResponse(res, false, 'OTP not found or expired', 400); 
+            return sendGeneralResponse(res, false, 'Please request a new OTP', 400); 
          }
 
         const { otpHash, expiresAt } = otpEntry;
 
          
         if (Date.now() > expiresAt) {
-            return sendGeneralResponse(res, false, 'OTP has expired', 400);  
+            return sendGeneralResponse(res, false, 'The OTP has expired. Please request a new one.', 400);  
          }
 
          const isValid = await bcrypt.compare(otp, otpHash);
@@ -198,31 +193,23 @@ const verifyEmailOtp = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
 const verifyPhoneOtp = async (phone, otp) => {
  
     const otpEntry = await Otp.findOne({ phone });
 
     if (!otpEntry) {
-        return { status: false, message: 'OTP not found for this phone number' };
+        return { status: false, message: 'Please request a new OTP' };
     }
     const { otpHash, expiresAt, isUsed } = otpEntry;
 
     
     if (Date.now() > expiresAt) {
-        return sendGeneralResponse(res, false, 'OTP has expired', 400);    
+        return sendGeneralResponse(res, false, 'The OTP has expired. Please request a new one.', 400);    
     }
  
     const isValid = await bcrypt.compare(otp, otpHash);
 
     if (!isValid) {
- 
         return { status: false, message: 'Invalid OTP' };
     }
 
@@ -230,78 +217,6 @@ const verifyPhoneOtp = async (phone, otp) => {
 
     return { status: true };
 };
-
-
-
-
-
-
-
-
-//  const sendotp = async (req, res) => {
-//      try {
-//         const { phone } = req.body;
-
-
-//          if (!phone) {
-//             return  sendGeneralResponse(res, false, "Phone number is required",  400,)
-//         }
-
-
-//         if (!validatePhoneNumber(phone)) {
-//           return  sendGeneralResponse(res, false, "Invalid phone number",  400,)
-//           }
-
-//         // Generate a 6-digit OTP
-//         const otp = otpGenerator.generate(6, {
-//             lowerCaseAlphabets: false,
-//             upperCaseAlphabets: false,
-//             specialChars: false
-//         });
-
-//         // Set OTP expiration time (15 minutes)
-//         const cDate = new Date();
-//         const otpExpiration = new Date(cDate.getTime() + 15 * 60 * 1000);
-
-//         // Update or insert OTP for the phone number
-//         await Otp.findOneAndUpdate(
-//             { phone },
-//             { otp, otpExpiration },
-//             { upsert: true, new: true, setDefaultsOnInsert: true }
-//         );
-
-//         //    sendGeneralResponse(res, true, "OTP sent successfully",  200,  {
-//         //     otp:otp,
-//         //  })
-          
-
-//          const otpMessage = `${otp}`;  
-//          const otpResult = await sendSMS(phone, otpMessage);
-         
-         
-          
-//          if (!otpResult.success) {
-//              console.error('OTP sending failed:', otpResult.error);
-//              return sendGeneralResponse(res, false, 'Failed to send OTP', 500);
-//          }
-
-
-//          sendGeneralResponse(res, true, 'OTP sent to phone no', 200);
-
-
-//     } catch (error) {
-//         console.error('Error in sending OTP:', error);
-//         sendGeneralResponse(res, false, "Error in sending OTP",  500,)
-//      }
-// };
-
-
-
- 
-
-
- 
-
 
 
 module.exports = { sendEmailOtp   , sendPhoneOtp , verifyEmailOtp  , verifyPhoneOtp };
