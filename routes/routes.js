@@ -35,7 +35,7 @@ router.post('/getNewAccessToken', getAccessToken
 
 
 //shop routes
-router.get('/shopDetail/:id',verifyToken, shopdetails);
+router.get('/shopDetail/:id', shopdetails);
 router.post('/createshop', createShop);
 
 

@@ -4,7 +4,7 @@ const bookingController = require('../controller/booking_controller');
 const verifyToken = require('../middleware/authmiddleware');
 
 // Create a new booking
-router.post('/',  bookingController.createBooking);
+router.post('/:userId',  bookingController.createBooking);
 
 // Get all bookings
 router.get('/',  bookingController.getAllBookings);
@@ -19,9 +19,11 @@ router.put('/:id',  bookingController.updateBooking);
 router.delete('/:id', bookingController.deleteBooking);
 
 // Route to get all booking history for a user by userId
-router.get('/history/:userId', bookingController.getBookingHistory);
+router.get('/history/:user_id', bookingController.getBookingHistory);
 
 // Route to get booking history filtered by status
-router.get('/history/status/:status', bookingController.getBookingHistoryByStatus);
+router.get('/history/completed', bookingController.getBookingComplete);
+router.get('/history/upcoming', bookingController.getBookingUpcoming);
+router.get('/history/cancel', bookingController.getBookingCancelled);
 
 module.exports = router;

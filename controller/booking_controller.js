@@ -1,53 +1,68 @@
 const Booking = require('../models/booking_model');
+const Service = require('../models/shop_model');
 const { body, validationResult } = require('express-validator');
+const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
 
 // Create a new booking
-exports.createBooking = [
-    // Validation rules
-    body('user_id').isMongoId().withMessage('User ID must be a valid MongoDB Object ID'),
-    body('service_id').isMongoId().withMessage('Service ID must be a valid MongoDB Object ID'),
-    body('provider_id').isMongoId().withMessage('Provider ID must be a valid MongoDB Object ID'),
-    body('booking_date').isISO8601().toDate().withMessage('Booking date must be a valid date'),
-    body('booking_status').isIn(['confirmed', 'completed', 'cancelled', 'pending']).withMessage('Invalid booking status'),
-    body('payment.amount').isNumeric().withMessage('Payment amount must be a number'),
-    body('payment.currency').isString().withMessage('Currency must be a string'),
-    body('payment_method').isIn(['credit_card', 'paypal', 'bank_transfer']).withMessage('Invalid payment method'),
-    body('payment_status').isIn(['paid', 'pending', 'failed']).withMessage('Invalid payment status'),
-    body('payment.transaction_id').isString().withMessage('Transaction ID must be a string'),
-    body('payment.payment_date').isISO8601().toDate().withMessage('Payment date must be a valid date'),
-    body('payment.payment_id').isString().withMessage('Payment ID must be a string'),
+exports.createBooking = async (req, res) => {
+    try {
+        // Extract user ID from the request params
+        const { userId } = req.params;
 
-    async (req, res) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
+        // Extract other booking data from the request body
+        const { service_id, provider_id, booking_date, booking_status, payment, details, appointment_time, appointment_date } = req.body;
+
+        // Validate required fields
+        if (!appointment_time || !appointment_date) {
+            return res.status(400).json({ success: false, message: 'appointment_time and appointment_date are required.' });
         }
 
-        try {
-            // Create new booking
-            const newBooking = new Booking({
-                ...req.body,
-                payment: {
-                    ...req.body.payment,
-                    booking_id: uuidv4() // Generate unique booking ID
-                }
-            });
-
-            // Save the booking to the database
-            const savedBooking = await newBooking.save();
-            res.status(201).json({ success: true, booking: savedBooking });
-        } catch (error) {
-            res.status(500).json({ success: false, message: error.message });
+        // Validate service_id and provider_id
+        if (!Array.isArray(service_id) || service_id.some(id => !mongoose.Types.ObjectId.isValid(id))) {
+            return res.status(400).json({ success: false, message: 'Invalid service ID(s)' });
         }
+
+        if (!mongoose.Types.ObjectId.isValid(provider_id)) {
+            return res.status(400).json({ success: false, message: 'Invalid provider ID' });
+        }
+
+        // Create new booking
+        const newBooking = new Booking({
+            user_id: userId,
+            service_id: service_id, // Assuming service_id is an array
+            provider_id,
+            booking_date,
+            booking_status,
+            payment,
+            details,
+            appointment_time,  // Include appointment_time in booking
+            appointment_date   // Include appointment_date in booking
+        });
+
+        await newBooking.save();
+        return res.status(201).json({ success: true, message: 'Booking created successfully', booking: newBooking });
+    } catch (error) {
+        console.error(error); // Log the error for debugging
+        return res.status(500).json({ success: false, message: 'An error occurred while creating the booking' });
     }
-];
+};
 
-// Get all bookings
+// Get all bookings and populate sub-service names
 exports.getAllBookings = async (req, res) => {
     try {
         const bookings = await Booking.find()
-            .populate('user_id service_id provider_id');
+            .populate({
+                path: 'service_id.',
+                model: 'Shop',
+                populate: {
+                    path: 'services.subServices',
+                    model: 'SubService',
+                    select: 'subServiceName',
+                },
+            })
+            .populate('provider_id user_id', 'name email'); // Optionally populate provider and user details
+
         res.status(200).json({ success: true, bookings });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -58,7 +73,7 @@ exports.getAllBookings = async (req, res) => {
 exports.getBookingById = async (req, res) => {
     try {
         const booking = await Booking.findById(req.params.id)
-            .populate('user_id service_id provider_id');
+            .populate('user_id service_id provider_id', ' firstName lastName email name ');
         if (!booking) {
             return res.status(404).json({ success: false, message: 'Booking not found' });
         }
@@ -94,7 +109,7 @@ exports.updateBooking = [
 // Delete a booking by ID
 exports.deleteBooking = async (req, res) => {
     try {
-        const deletedBooking = await Booking.findByIdAndDelete(req.params.id);
+        const deletedBooking = await Booking.findByIdAndDelete(req.params.id).populate('service_id.');
         if (!deletedBooking) {
             return res.status(404).json({ success: false, message: 'Booking not found' });
         }
@@ -107,41 +122,115 @@ exports.deleteBooking = async (req, res) => {
 // Get all booking history for a user
 exports.getBookingHistory = async (req, res) => {
     try {
-        const { userId } = req.params;
-        const bookingHistory = await Booking.find({ user_id: userId })
-            .populate('service_id provider_id')
-            .sort({ booking_date: -1 });
+        // Extract user ID from the request params
+        const { userId } = req.params; 
+        
+        // Fetch booking history for the user
+        const bookingHistory = await Booking.find({ userId }) 
+        .populate('user_id', 'firstName lastName email')
+        .populate('provider_id', 'name')
+            .populate({
+                path: 'service_id.',
+                model: 'Shop',
+                populate: {
+                    path: 'services.subServices',
+                    model: 'SubService'
+                }
+            })
+            .sort({ booking_date: -1 }); // Sort by booking date in descending order
 
         if (!bookingHistory || bookingHistory.length === 0) {
             return res.status(404).json({ success: false, message: 'No booking history found' });
         }
 
-        res.status(200).json({ success: true, bookings: bookingHistory });
+        // Format the response to include service names
+        const formattedBookings = bookingHistory.map(booking => {
+            const services = booking.service_id?.services || []; // Safe access to services
+            const serviceNames = services.flatMap(service =>
+                service.subServices ? service.subServices.map(subService => subService.subServiceName) : []
+            ); // Safe access to subServices
+
+            return {
+                ...booking.toObject(), // Convert mongoose object to plain JS object
+                service_names: serviceNames // Extract subServiceNames
+            };
+        });
+
+        return res.status(200).json({ success: true, bookings: formattedBookings });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        console.error(error); // Log the error for debugging
+        return res.status(500).json({ success: false, message: 'An error occurred while fetching booking history' });
     }
 };
 
-// Get booking history filtered by status
-exports.getBookingHistoryByStatus = async (req, res) => {
-    try {
-        const { status } = req.params;
-        const validStatuses = ['confirmed', 'completed', 'cancelled', 'pending'];
 
-        if (!validStatuses.includes(status)) {
-            return res.status(400).json({ success: false, message: 'Invalid booking status' });
+
+// Utility function to handle response formatting
+const handleResponse = (res, statusCode, success, message, data = null) => {
+    return res.status(statusCode).json({ success, message, bookings: data });
+};
+
+// Get booking history filtered by 'cancelled' status
+exports.getBookingCancelled = async (req, res) => {
+    try {
+        const bookingStatus = 'cancelled'; // Define booking status
+        
+        // Fetch bookings with the specified status
+        const bookingHistory = await Booking.find({ booking_status: bookingStatus })
+            .populate('service_id provider_id', 'name') // Populate service_id and provider_id fields
+            .sort({ booking_date: -1 }); // Sort bookings by booking date in descending order
+
+        // Check if no bookings were found
+        if (!bookingHistory || bookingHistory.length === 0) {
+            return handleResponse(res, 404, false, 'No bookings with status "cancelled" found');
         }
 
-        const bookingHistory = await Booking.find({ booking_status: status })
-            .populate('service_id provider_id')
+        // Return the found bookings
+        handleResponse(res, 200, true, 'Bookings retrieved successfully', bookingHistory);
+    } catch (error) {
+        // Log the error for debugging
+        console.error(`Error fetching cancelled bookings: ${error.message}`);
+        
+        // Return a generic error response
+        handleResponse(res, 500, false, 'An error occurred while fetching cancelled bookings');
+    }
+};
+
+
+// Get booking history filtered by 'completed' status
+exports.getBookingComplete = async (req, res) => {
+    try { 
+        const bookingHistory = await Booking.find({ booking_status: 'completed' })
+            .populate('service_id provider_id', 'name') // Corrected populate syntax
             .sort({ booking_date: -1 });
 
-        if (!bookingHistory || bookingHistory.length === 0) {
-            return res.status(404).json({ success: false, message: `No bookings with status '${status}' found` });
+        if (!bookingHistory.length) {
+            return handleResponse(res, 404, false, 'No bookings with status "completed" found');
         }
 
-        res.status(200).json({ success: true, bookings: bookingHistory });
+        handleResponse(res, 200, true, 'Bookings retrieved successfully', bookingHistory);
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        console.error(`Error fetching completed bookings: ${error.message}`); // Log the error for debugging
+        handleResponse(res, 500, false, 'An error occurred while fetching completed bookings');
+    }
+};
+
+// Get all upcoming bookings filtered by 'confirmed' and 'pending' statuses
+exports.getBookingUpcoming = async (req, res) => {
+    try {
+        const validStatuses = ['confirmed', 'pending'];
+
+        const bookingHistory = await Booking.find({ booking_status: { $in: validStatuses } }) // Use $in to filter for confirmed and pending bookings
+            .populate('service_id provider_id', 'name') // Corrected populate syntax
+            .sort({ booking_date: -1 }); // Sort by booking date in descending order
+
+        if (!bookingHistory.length) {
+            return handleResponse(res, 404, false, 'No upcoming bookings found');
+        }
+
+        handleResponse(res, 200, true, 'Upcoming bookings retrieved successfully', bookingHistory);
+    } catch (error) {
+        console.error(`Error fetching upcoming bookings: ${error.message}`); // Log the error for debugging
+        handleResponse(res, 500, false, 'An error occurred while fetching upcoming bookings');
     }
 };
