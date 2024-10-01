@@ -7,8 +7,7 @@ const errorHandler = require('./middleware/errorhandling');
 //routes
  
 const authRoutes = require('./routes/routes');
-const otpRoutes = require('./routes/otp_routes'); 
-
+ 
 const userInfoRoutes = require('./routes/Info_user_route');
 const bookingRoute=require('./routes/booking_route')
 
