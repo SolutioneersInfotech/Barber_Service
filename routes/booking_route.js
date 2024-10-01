@@ -1,29 +1,20 @@
 const express = require('express');
 const router = express.Router();
 const bookingController = require('../controller/booking_controller');
-const verifyToken = require('../middleware/authmiddleware');
 
-// Create a new booking
-router.post('/:userId',  bookingController.createBooking);
+// Route to create a new booking
+router.post('/', bookingController.createBooking);
 
-// Get all bookings
-router.get('/',  bookingController.getAllBookings);
+// Route to get upcoming bookings for a user
+router.get('/upcoming/:userId', bookingController.getUpcomingBookings);
 
-// Get booking by ID
-router.get('/:id', bookingController.getBookingById);
+// Route to get completed bookings for a user
+router.get('/completed/:userId', bookingController.getCompletedBookings);
 
-// Update booking by ID
-router.put('/:id',  bookingController.updateBooking);
+// Route to get canceled bookings for a user
+router.get('/canceled/:userId', bookingController.getCanceledBookings);
 
-// Delete booking by ID
-router.delete('/:id', bookingController.deleteBooking);
-
-// Route to get all booking history for a user by userId
-router.get('/history/:user_id', bookingController.getBookingHistory);
-
-// Route to get booking history filtered by status
-router.get('/history/completed', bookingController.getBookingComplete);
-router.get('/history/upcoming', bookingController.getBookingUpcoming);
-router.get('/history/cancel', bookingController.getBookingCancelled);
+// Route to update booking status
+router.put('/update-status/:bookingId', bookingController.updateBookingStatus);
 
 module.exports = router;
