@@ -72,62 +72,6 @@ const login = async (req, res) => {
 };
 
 
-
-
- 
-// // user register 
-// const register = async (req, res) => {
-//     const { firstName, lastName, email, phone, DOB, gender, address, profile_img , device_token } = req.body;
-
-//     const requiredFields = { firstName, lastName, email, phone, DOB, gender, address, profile_img, device_token };
-
-    // const validationResult = validateRequiredFields(res, requiredFields);
-    // if (validationResult !== true) return;
-
-//     if (!validateEmail(email)) {
-//         return sendGeneralResponse(res, false, 'Invalid email', 400);
-//     }
-
-//     if (!validatePhoneNumber(phone)) {
-//         return sendGeneralResponse(res, false, 'Invalid phone number', 400);
-//     }
-
-//     if (!req.file) {
-//         return sendGeneralResponse(res, false, 'Profile image is required', 400);
-//     }
-
-//     try {
-//         const existingUser = await User.findOne({ $or: [{ email }, { phone }] });
-//         if (existingUser) {
-//             let message = '';
-//             if (existingUser.email === email) message += 'Email already registered. ';
-//             if (existingUser.phone === phone) message += 'Phone number already registered.';
-//             return sendGeneralResponse(res, false, message.trim(), 400);
-//         }
-
-//         let profile_img_url = null;
-
-//         if (req.file) {
-//             profile_img_url = await uploadImage(req.file.buffer, 'profile_img_' + Date.now());
-//         }
-
-//         const user = new User({ firstName, lastName, email, phone, DOB, gender, address,  profile_img: profile_img_url , device_token });
-//         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
-//         user.token = token;
-//         await user.save();
-
-//         sendGeneralResponse(res, true, 'Registered successfully', 200, user);
-//     } catch (error) {
-//         if (error.name === 'ValidationError') {
-//             const messages = Object.values(error.errors).map(err => err.message);
-//             return sendGeneralResponse(res, false, messages.join('. '), 400);
-//         }
-//         console.error('Registration error:', error);
-//         sendGeneralResponse(res, false, 'Internal server error', 500);
-//     }
-// };
- 
-
 const register = async (req, res) => {
 
 
@@ -171,7 +115,22 @@ const register = async (req, res) => {
         }
 
         // Create and save the user
-        const user = new User({ firstName, lastName, email, phone, DOB, gender, address, profile_img: profile_img_url, device_token });
+        const user = new User({firstName,
+                lastName,
+                email,
+                phone,
+                DOB,
+                gender,
+                profile_img: profile_img_url,
+                address: {
+                    houseNo: address.houseNo,
+                    street: address.street,
+                    city: address.city,
+                    state: address.state,
+                    pin: address.pin,
+                    country: address.country,
+                },
+                device_token, });
         const accessToken = generateAccessToken(user._id);
         const refreshToken = generateRefreshToken(user._id);
         
@@ -230,7 +189,6 @@ const register = async (req, res) => {
         sendGeneralResponse(res, false, 'Internal server error', 500);
     }
 };
-
 
 
 // find user through token
