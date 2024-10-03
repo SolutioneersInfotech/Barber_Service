@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const User = require("../models/User_model");
 const Shop = require('../models/shop_model');
-const Customer = require('../models/cust_models');
+// const Customer = require('../models/cust_models');
 
 const addBookmark = async (req, res) => {
     try {
@@ -108,7 +108,7 @@ const getBookmarkedShops = async (req, res) => {
         const userEmail = user.email;
 
         // Query Customer using the email
-        const customer = await Customer.findOne({ email: userEmail });
+        const customer = await User.findOne({ email: userEmail });
 
         if (!customer) {
             return res.status(404).json({ 

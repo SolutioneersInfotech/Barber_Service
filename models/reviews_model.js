@@ -9,7 +9,7 @@ const reviewSchema = new mongoose.Schema({
     },
     customer: {  // Changed from array to single reference
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Customer',
+        ref: 'User',
         required: true
     },
     barber: {  // Optionally add if reviews can be linked to barbers
