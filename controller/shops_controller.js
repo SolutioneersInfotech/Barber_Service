@@ -23,38 +23,44 @@ const shopdetails = async (req, res) => {
                 select: '_id review customer likes rating createdAt',
                 populate: {
                     path: 'customer',
-                   // select: 'profile_img',
+                // Assuming the 'User' schema has a 'firstName' field
                 }
             })
-            .populate('services.subServices') // Populate subServices if they are references
+        //    .populate('services.subServices') // Populate subServices if they are references
             .exec();
-         console.log(shop.customer)
+
         // If no shop is found
         if (!shop) {
             return sendGeneralResponse(res, false, "Shop not found", 404);
         }
 
+        // Find reviews related to the shop and populate customer data
         const reviews = await Review.find({ shop: shopId })
-            .populate('customer')
+            .populate('customer', "firstName lastName profile_img") // Ensure customer is populated
             .exec();
 
+        // Aggregate reviews to count them
         const counts = await Review.aggregate([
             {
+                $match: { shop: new mongoose.Types.ObjectId(shopId) }, // Ensure shop field is used in aggregation
+            },
+            {
                 $group: {
-                    _id: "$shopId",   // Group by the field (e.g., shop ID)
-                    count: { $sum: 1 }  // Count the number of occurrences
+                    _id: "$shop", // Group by the shop field
+                    count: { $sum: 1 }, // Count the number of reviews
                 }
             },
             {
                 $project: {
-                    _id: 0,   // Exclude the _id field (i.e., shopId)
-                    count: 1   // Include only the count field
+                    _id: 0, // Exclude the _id field (i.e., shop)
+                    count: 1 // Include only the count field
                 }
             }
         ]);
 
         // Calculate total counts
-        const totalCounts = counts.reduce((total, item) => total + item.count, 0);
+        const totalCounts = counts.length > 0 ? counts[0].count : 0;
+
         // Construct the response data
         const shopData = {
             images: shop.shop_images || [],
@@ -84,13 +90,11 @@ const shopdetails = async (req, res) => {
                     img: subService.img
                 })),
             })),
-            // Corrected packages section
             packages: shop.services.map(service => ({
                 serviceName: service.serviceName,
                 description: service.description || "No Special offer",
                 rate: service.rate
             })),
-            // Booknow section with corrected subService mapping
             booknow: shop.services.map(service => ({
                 Shop_Name: shop.name,
                 ServiceName: service.serviceName,
@@ -99,20 +103,14 @@ const shopdetails = async (req, res) => {
                     SubServiceName: subService.subServiceName,
                 }))
             })),
-            // // Fetch related data
-
             reviews: reviews.map(review => ({
                 id: review._id,
-                customer: {
-                  //  fullName: review.customer.firstName,
-                    profilePic: review.customer.profile_img
-                },
+                customer: review.customer ,
                 rating: review.rating,
                 review: review.review,
                 likes: review.likes,
                 createdAt: review.createdAt
             })),
-
             gallery: shop.gallery || [],
         };
 
@@ -125,81 +123,4 @@ const shopdetails = async (req, res) => {
 };
 
 
-const about = async (req, res) => {
-    try {
-        const shopId = req.params.id;
-        const shop = await Shop.findById(shopId, 'name owner contactNumber email website');
-        if (!shop) {
-            return res.status(404).json({ success: false, message: 'Shop not found' });
-        }
-        res.status(200).json({ success: true, data: shop });
-    } catch (error) {
-        res.status(500).json({ success: false, message: 'Error fetching shop details', error: error.message });
-    }
-};
-
-
-const services = async (req, res) => {
-    try {
-        const shopId = req.params.id;
-        const shop = await Shop.findById(shopId, 'services');
-        if (!shop) {
-            return res.status(404).json({ success: false, message: 'Shop not found' });
-        }
-        res.status(200).json({ success: true, data: shop.services });
-    } catch (error) {
-        res.status(500).json({ success: false, message: 'Error fetching shop services', error: error.message });
-    }
-};
-
-
-
-
-const packages = async (req, res) => {
-    try {
-        const shopId = req.params.id;
-        // Assuming packages are stored within services or a separate collection
-        const shop = await Shop.findById(shopId, 'services');
-        if (!shop) {
-            return res.status(404).json({ success: false, message: 'Shop not found' });
-        }
-        // Example: filter services to return only packages (if they are stored separately)
-        const packages = shop.services.filter(service => service.isPackage);
-        res.status(200).json({ success: true, data: packages });
-    } catch (error) {
-        res.status(500).json({ success: false, message: 'Error fetching shop packages', error: error.message });
-    }
-};
-
-
-const gallery = async (req, res) => {
-    try {
-        const shopId = req.params.id;
-        const shop = await shop.findById(shopId, 'gallery');
-        if (!shop) {
-            return res.status(404).json({ success: false, message: 'Shop not found' });
-        }
-        res.status(200).json({ success: true, data: shop.gallery });
-    } catch (error) {
-        res.status(500).json({ success: false, message: 'Error fetching shop gallery', error: error.message });
-    }
-};
-
-
-const review = async (req, res) => {
-    try {
-        const shopId = req.params.id;
-        const shop = await shop.findById(shopId, 'ratings').populate('ratings.customer');
-        if (!shop) {
-            return res.status(404).json({ success: false, message: 'Shop not found' });
-        }
-        res.status(200).json({ success: true, data: shop.ratings });
-    } catch (error) {
-        res.status(500).json({ success: false, message: 'Error fetching shop reviews', error: error.message });
-    }
-};
-
-
-
-
-module.exports = { shopdetails, services, about, packages, gallery, review };
+module.exports = { shopdetails };

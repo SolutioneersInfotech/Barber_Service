@@ -237,8 +237,11 @@
 
 
 
+const mongoose = require('mongoose');
 const Booking = require('../models/booking_model');
 const Shop = require('../models/shop_model');
+const { sendGeneralResponse } = require('../utils/responseHelper');
+
 
 // Function to create a new booking
 exports.createBooking = async (req, res) => {
@@ -255,13 +258,13 @@ exports.createBooking = async (req, res) => {
       details: {
         additional_info,
       },
-      payment
+      payment,
     });
 
     await newBooking.save();
-    res.status(201).json({ message: 'Booking created successfully', booking: newBooking });
+    return sendGeneralResponse(res, true, 'Booking created successfully', 201, newBooking);
   } catch (error) {
-    res.status(500).json({ error: 'Error creating booking', details: error.message });
+    return sendGeneralResponse(res, false, 'Error creating booking', 500, error.message);
   }
 };
 
@@ -273,12 +276,12 @@ exports.getUpcomingBookings = async (req, res) => {
     const upcomingBookings = await Booking.find({
       user_id: userId,
       appointment_date: { $gte: new Date() },
-      booking_status: { $in: ['pending', 'confirmed'] }
-    }).populate('service_id. provider_id','serivce.subServices.subServiceSchema  name');
+      booking_status: { $in: ['pending', 'confirmed'] },
+    }).populate('service_id provider_id', 'name');
 
-    res.status(200).json({ message: 'Upcoming bookings retrieved successfully', bookings: upcomingBookings });
+    return sendGeneralResponse(res, true, 'Upcoming bookings retrieved successfully', 200, upcomingBookings);
   } catch (error) {
-    res.status(500).json({ error: 'Error retrieving upcoming bookings', details: error.message });
+    return sendGeneralResponse(res, false, 'Error retrieving upcoming bookings', 500, error.message);
   }
 };
 
@@ -289,12 +292,12 @@ exports.getCompletedBookings = async (req, res) => {
 
     const completedBookings = await Booking.find({
       user_id: userId,
-      booking_status: 'completed'
+      booking_status: 'completed',
     }).populate('service_id provider_id');
 
-    res.status(200).json({ message: 'Completed bookings retrieved successfully', bookings: completedBookings });
+    return sendGeneralResponse(res, true, 'Completed bookings retrieved successfully', 200, completedBookings);
   } catch (error) {
-    res.status(500).json({ error: 'Error retrieving completed bookings', details: error.message });
+    return sendGeneralResponse(res, false, 'Error retrieving completed bookings', 500, error.message);
   }
 };
 
@@ -305,12 +308,12 @@ exports.getCanceledBookings = async (req, res) => {
 
     const canceledBookings = await Booking.find({
       user_id: userId,
-      booking_status: 'cancelled'
+      booking_status: 'cancelled',
     }).populate('service_id provider_id');
 
-    res.status(200).json({ message: 'Canceled bookings retrieved successfully', bookings: canceledBookings });
+    return sendGeneralResponse(res, true, 'Canceled bookings retrieved successfully', 200, canceledBookings);
   } catch (error) {
-    res.status(500).json({ error: 'Error retrieving canceled bookings', details: error.message });
+    return sendGeneralResponse(res, false, 'Error retrieving canceled bookings', 500, error.message);
   }
 };
 
@@ -327,11 +330,11 @@ exports.updateBookingStatus = async (req, res) => {
     );
 
     if (!updatedBooking) {
-      return res.status(404).json({ error: 'Booking not found' });
+      return sendGeneralResponse(res, false, 'Booking not found', 404);
     }
 
-    res.status(200).json({ message: 'Booking status updated successfully', booking: updatedBooking });
+    return sendGeneralResponse(res, true, 'Booking status updated successfully', 200, updatedBooking);
   } catch (error) {
-    res.status(500).json({ error: 'Error updating booking status', details: error.message });
+    return sendGeneralResponse(res, false, 'Error updating booking status', 500, error.message);
   }
 };
