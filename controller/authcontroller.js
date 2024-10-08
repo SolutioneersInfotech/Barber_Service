@@ -148,20 +148,20 @@ const register = async (req, res) => {
                 <h1>Welcome to Our Service!</h1>
             </div>
             <div style="padding: 20px; background-color: rgba(247, 177, 79, 0.1); border-radius: 10px;">
-                <h2 style="color: #333;">Hello, ${firstName} ${lastName} ji!</h2>
+                <h2 style="color: #333;">Hello, ${firstName} ${lastName}!</h2>
                 <p>We are thrilled to have you on board. Thank you for registering with us!</p>
                 <p>You can now start using all the services we offer. If you have any questions, feel free to reach out to our support team.</p>
                 <p>We hope you have a great experience with us!</p>
-                <a href="https://yourwebsite.com" style="display: inline-block; background-color: rgb(255, 151, 5); color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; margin-top: 20px;">Visit Our Website</a>
+                <a href="https://solutioneersinfotech.in" style="display: inline-block; background-color: rgb(255, 151, 5); color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; margin-top: 20px;">Visit Our Website</a>
                 <p style="margin-top: 20px;">Follow us on social media:</p>
                 <div style="text-align: center; margin-top: 10px;"> 
-                    <a href="https://www.facebook.com/yourpage" style="margin-right: 10px;">
+                    <a href="https://www.facebook.com/profile.php?id=61562639168028&ref=xav_ig_profile_web" style="margin-right: 10px;">
                         <img src="https://img.icons8.com/ios-filled/24/FF69B4/facebook-new.png" alt="Facebook" />
                     </a>
-                    <a href="https://www.instagram.com/yourpage" style="margin-right: 10px;">
+                    <a href="https://www.instagram.com/solutioneersinfotech" style="margin-right: 10px;">
                         <img src="https://img.icons8.com/ios-filled/24/FF69B4/instagram-new.png" alt="Instagram" />
                     </a>
-                    <a href="mailto:support@yourservice.com">
+                    <a href="mailto:info@solutioneers.in">
                         <img src="https://img.icons8.com/ios-filled/24/FF69B4/support.png" alt="Support" />
                     </a>
                 </div>
@@ -173,6 +173,59 @@ const register = async (req, res) => {
     </div>
 `;
 
+
+// const html = `
+//         <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;">
+//             <div style="background-color: white; max-width: 600px; margin: 20px auto; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); transition: box-shadow 0.3s ease;">
+//                 <div style="background-color: rgb(255, 151, 5); padding: 15px; color: white; text-align: center; border-radius: 15px 15px 0 0; transition: background-color 0.3s ease;">
+//                     <h1 style="font-size: 28px; font-weight: bold;">Welcome to Our Service!</h1>
+//                 </div>
+//                 <div style="padding: 25px; background-color: rgba(247, 177, 79, 0.1); border-radius: 0 0 15px 15px;">
+//                     <h2 style="color: #333; font-size: 22px;">Hello, ${firstName} ${lastName}!</h2>
+//                     <p style="font-size: 16px; color: #555;">We are thrilled to have you on board. Thank you for registering with us!</p>
+//                     <p style="font-size: 16px; color: #555;">You can now start using all the services we offer. If you have any questions, feel free to reach out to our support team.</p>
+//                     <p style="font-size: 16px; color: #555;">We hope you have a great experience with us!</p>
+//                     <a href="https://solutioneersinfotech.in" 
+//                         style="display: inline-block; background-color: rgb(255, 151, 5); color: white; padding: 12px 18px; 
+//                         text-decoration: none; border-radius: 6px; font-size: 16px; margin-top: 20px; transition: background-color 0.3s ease;">
+//                         Visit Our Website
+//                     </a>
+//                     <p style="margin-top: 30px; font-size: 16px; color: #777;">Follow us on social media:</p>
+//                     <div style="text-align: center; margin-top: 15px;"> 
+//                         <a href="https://www.facebook.com/profile.php?id=61562639168028&ref=xav_ig_profile_web" 
+//                             style="margin-right: 15px; transition: transform 0.3s ease;">
+//                             <img src="https://img.icons8.com/ios-filled/30/FF69B4/facebook-new.png" alt="Facebook" style="filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));" />
+//                         </a>
+//                         <a href="https://www.instagram.com/solutioneersinfotech" 
+//                             style="margin-right: 15px; transition: transform 0.3s ease;">
+//                             <img src="https://img.icons8.com/ios-filled/30/FF69B4/instagram-new.png" alt="Instagram" style="filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));" />
+//                         </a>
+//                         <a href="mailto:info@solutioneers.in" style="margin-right: 15px; transition: transform 0.3s ease;">
+//                             <img src="https://img.icons8.com/ios-filled/30/FF69B4/support.png" alt="Support" style="filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));" />
+//                         </a>
+//                         <a href="https://www.linkedin.com/company/solutioneers-infotech" 
+//                             style="transition: transform 0.3s ease;">
+//                             <img src="https://img.icons8.com/ios-filled/30/FF69B4/linkedin.png" alt="LinkedIn" style="filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));" />
+//                         </a>
+//                     </div>
+//                     <div style="margin-top: 25px; text-align: center; color: #777; font-size: 12px;">
+//                         <p>&copy; 2024 Our Service. All Rights Reserved.</p>
+//                     </div>
+//                 </div>
+//             </div>
+//         </div>
+//         <style>
+//             div:hover {
+//                 box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+//             }
+//             a:hover {
+//                 background-color: rgb(255, 120, 5);
+//             }
+//             img:hover {
+//                 transform: scale(1.1);
+//             }
+//         </style>
+//     `;
          await sendMail(email, subject, ``, html);
         
 

@@ -29,8 +29,7 @@ router.post("/sendPhoneOtp", sendPhoneOtp);
 
 router.get('/finduser', finduser); 
 router.get('/getAdds', getAdds); 
-router.post('/getNewAccessToken', getAccessToken
-); 
+router.post('/getNewAccessToken', getAccessToken); 
 
 
 
