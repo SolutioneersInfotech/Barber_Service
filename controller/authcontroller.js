@@ -152,16 +152,19 @@ const register = async (req, res) => {
                 <p>We are thrilled to have you on board. Thank you for registering with us!</p>
                 <p>You can now start using all the services we offer. If you have any questions, feel free to reach out to our support team.</p>
                 <p>We hope you have a great experience with us!</p>
-                <a href="https://solutioneersinfotech.in" style="display: inline-block; background-color: rgb(255, 151, 5); color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; margin-top: 20px;">Visit Our Website</a>
-                <p style="margin-top: 20px;">Follow us on social media:</p>
-                <div style="text-align: center; margin-top: 10px;"> 
-                    <a href="https://www.facebook.com/profile.php?id=61562639168028&ref=xav_ig_profile_web" style="margin-right: 10px;">
-                        <img src="https://img.icons8.com/ios-filled/24/FF69B4/facebook-new.png" alt="Facebook" />
-                    </a>
-                    <a href="https://www.instagram.com/solutioneersinfotech" style="margin-right: 10px;">
-                        <img src="https://img.icons8.com/ios-filled/24/FF69B4/instagram-new.png" alt="Instagram" />
-                    </a>
-                    <a href="mailto:info@solutioneers.in">
+                <a href="https://www.linkedin.com/company/solutioneers-infotech" style="margin: 0 5px; display: inline-block;">
+                    <img src="https://img.icons8.com/color/48/000000/linkedin.png" alt="LinkedIn" style="width: 30px;" />
+                </a>
+                <a href="https://www.facebook.com/profile.php?id=61562639168028&ref=xav_ig_profile_web" style="margin: 0 5px; display: inline-block;">
+                    <img src="https://img.icons8.com/color/48/000000/facebook-new.png" alt="Facebook" style="width: 30px;" />
+                </a>
+                <a href="https://www.instagram.com/solutioneersinfotech" style="margin: 0 5px; display: inline-block;">
+                    <img src="https://img.icons8.com/color/48/000000/instagram-new.png" alt="Instagram" style="width: 30px;" />
+                </a>
+                <a href="https://solutioneersinfotech.in" style="margin: 0 5px; display: inline-block;">
+                    <img src="https://img.icons8.com/color/48/000000/domain.png" alt="Website" style="width: 30px;" />
+                </a>
+                 <a href="mailto:info@solutioneers.in">
                         <img src="https://img.icons8.com/ios-filled/24/FF69B4/support.png" alt="Support" />
                     </a>
                 </div>

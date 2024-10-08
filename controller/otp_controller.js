@@ -76,18 +76,21 @@ const bcrypt = require('bcrypt');
         <div style="margin-top: 20px;">
             <p style="color: #777; font-size: 14px;">Follow us:</p>
             <div style="display: inline-block;">
-                <a href="https://www.linkedin.com" style="margin: 0 5px; display: inline-block;">
+                <a href="https://www.linkedin.com/company/solutioneers-infotech" style="margin: 0 5px; display: inline-block;">
                     <img src="https://img.icons8.com/color/48/000000/linkedin.png" alt="LinkedIn" style="width: 30px;" />
                 </a>
-                <a href="https://www.facebook.com" style="margin: 0 5px; display: inline-block;">
+                <a href="https://www.facebook.com/profile.php?id=61562639168028&ref=xav_ig_profile_web" style="margin: 0 5px; display: inline-block;">
                     <img src="https://img.icons8.com/color/48/000000/facebook-new.png" alt="Facebook" style="width: 30px;" />
                 </a>
-                <a href="https://www.instagram.com" style="margin: 0 5px; display: inline-block;">
+                <a href="https://www.instagram.com/solutioneersinfotech" style="margin: 0 5px; display: inline-block;">
                     <img src="https://img.icons8.com/color/48/000000/instagram-new.png" alt="Instagram" style="width: 30px;" />
                 </a>
-                <a href="https://www.yourwebsite.com" style="margin: 0 5px; display: inline-block;">
+                <a href="https://solutioneersinfotech.in" style="margin: 0 5px; display: inline-block;">
                     <img src="https://img.icons8.com/color/48/000000/domain.png" alt="Website" style="width: 30px;" />
                 </a>
+                 <a href="mailto:info@solutioneers.in">
+                        <img src="https://img.icons8.com/ios-filled/24/FF69B4/support.png" alt="Support" />
+                    </a>
             </div>
         </div>
 
