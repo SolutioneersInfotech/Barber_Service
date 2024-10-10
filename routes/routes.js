@@ -31,7 +31,7 @@ router.get('/finduser', finduser);
 // get shops
 router.get('/shops/nearBy', verifyToken, getNearbyShops);  
 router.get('/shops/mostPopular', getPopularShops); 
-
+ 
 
 
 //shop routes
