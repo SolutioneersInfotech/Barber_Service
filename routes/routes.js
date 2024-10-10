@@ -8,32 +8,36 @@ const {  sendPhoneOtp, sendEmailOtp, verifyEmailOtp } = require("../controller/o
 const getAdds = require('../controller/adds.js');
 const { shopdetails} = require('../controller/shops_controller.js');
 const { addBookmark,getBookmarkedShops, removeBookmark } = require('../controller/bookmark.js');
-const upload = multer({ storage: multer.memoryStorage() });
 
+
+const upload = multer({ storage: multer.memoryStorage() });
 const router = express.Router();
 
-// Public routes
+
+// auth route
 router.post('/register', upload.single('profile_img'), register);
 router.post('/login',login);
-router.get('/shops/nearBy', verifyToken, getNearbyShops);  
-router.get('/shops/mostPopular', getPopularShops); 
-router.put('/update_device_token', updateDeviceToken);  
-// router.post('/send-otp', sendotp);
+router.post('/getNewAccessToken', getAccessToken); 
 router.post("/sendEmailOtp", sendEmailOtp);
 router.post("/verifyEmailOtp", verifyEmailOtp);
-
 router.post("/sendPhoneOtp", sendPhoneOtp);
 
 
+
 router.get('/finduser', finduser); 
-router.get('/getAdds', getAdds); 
-router.post('/getNewAccessToken', getAccessToken); 
+ 
+
+
+// get shops
+router.get('/shops/nearBy', verifyToken, getNearbyShops);  
+router.get('/shops/mostPopular', getPopularShops); 
 
 
 
 //shop routes
 router.get('/shopDetail/:id', shopdetails);
 router.post('/createshop', createShop);
+router.get('/getAdds', getAdds); 
 
 
 
