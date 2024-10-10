@@ -18,6 +18,7 @@ const router = express.Router();
 router.post('/register', upload.single('profile_img'), register);
 router.post('/login',login);
 router.post('/getNewAccessToken', getAccessToken); 
+router.put('/update_device_token', updateDeviceToken)
 router.post("/sendEmailOtp", sendEmailOtp);
 router.post("/verifyEmailOtp", verifyEmailOtp);
 router.post("/sendPhoneOtp", sendPhoneOtp);
