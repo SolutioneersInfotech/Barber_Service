@@ -72,62 +72,6 @@ const login = async (req, res) => {
 };
 
 
-
-
- 
-// // user register 
-// const register = async (req, res) => {
-//     const { firstName, lastName, email, phone, DOB, gender, address, profile_img , device_token } = req.body;
-
-//     const requiredFields = { firstName, lastName, email, phone, DOB, gender, address, profile_img, device_token };
-
-    // const validationResult = validateRequiredFields(res, requiredFields);
-    // if (validationResult !== true) return;
-
-//     if (!validateEmail(email)) {
-//         return sendGeneralResponse(res, false, 'Invalid email', 400);
-//     }
-
-//     if (!validatePhoneNumber(phone)) {
-//         return sendGeneralResponse(res, false, 'Invalid phone number', 400);
-//     }
-
-//     if (!req.file) {
-//         return sendGeneralResponse(res, false, 'Profile image is required', 400);
-//     }
-
-//     try {
-//         const existingUser = await User.findOne({ $or: [{ email }, { phone }] });
-//         if (existingUser) {
-//             let message = '';
-//             if (existingUser.email === email) message += 'Email already registered. ';
-//             if (existingUser.phone === phone) message += 'Phone number already registered.';
-//             return sendGeneralResponse(res, false, message.trim(), 400);
-//         }
-
-//         let profile_img_url = null;
-
-//         if (req.file) {
-//             profile_img_url = await uploadImage(req.file.buffer, 'profile_img_' + Date.now());
-//         }
-
-//         const user = new User({ firstName, lastName, email, phone, DOB, gender, address,  profile_img: profile_img_url , device_token });
-//         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
-//         user.token = token;
-//         await user.save();
-
-//         sendGeneralResponse(res, true, 'Registered successfully', 200, user);
-//     } catch (error) {
-//         if (error.name === 'ValidationError') {
-//             const messages = Object.values(error.errors).map(err => err.message);
-//             return sendGeneralResponse(res, false, messages.join('. '), 400);
-//         }
-//         console.error('Registration error:', error);
-//         sendGeneralResponse(res, false, 'Internal server error', 500);
-//     }
-// };
- 
-
 const register = async (req, res) => {
 
 
@@ -171,7 +115,22 @@ const register = async (req, res) => {
         }
 
         // Create and save the user
-        const user = new User({ firstName, lastName, email, phone, DOB, gender, address, profile_img: profile_img_url, device_token });
+        const user = new User({firstName,
+                lastName,
+                email,
+                phone,
+                DOB,
+                gender,
+                profile_img: profile_img_url,
+                address: {
+                    houseNo: address.houseNo,
+                    street: address.street,
+                    city: address.city,
+                    state: address.state,
+                    pin: address.pin,
+                    country: address.country,
+                },
+                device_token, });
         const accessToken = generateAccessToken(user._id);
         const refreshToken = generateRefreshToken(user._id);
         
@@ -189,20 +148,23 @@ const register = async (req, res) => {
                 <h1>Welcome to Our Service!</h1>
             </div>
             <div style="padding: 20px; background-color: rgba(247, 177, 79, 0.1); border-radius: 10px;">
-                <h2 style="color: #333;">Hello, ${firstName} ${lastName} ji!</h2>
+                <h2 style="color: #333;">Hello, ${firstName} ${lastName}!</h2>
                 <p>We are thrilled to have you on board. Thank you for registering with us!</p>
                 <p>You can now start using all the services we offer. If you have any questions, feel free to reach out to our support team.</p>
                 <p>We hope you have a great experience with us!</p>
-                <a href="https://yourwebsite.com" style="display: inline-block; background-color: rgb(255, 151, 5); color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; margin-top: 20px;">Visit Our Website</a>
-                <p style="margin-top: 20px;">Follow us on social media:</p>
-                <div style="text-align: center; margin-top: 10px;"> 
-                    <a href="https://www.facebook.com/yourpage" style="margin-right: 10px;">
-                        <img src="https://img.icons8.com/ios-filled/24/FF69B4/facebook-new.png" alt="Facebook" />
-                    </a>
-                    <a href="https://www.instagram.com/yourpage" style="margin-right: 10px;">
-                        <img src="https://img.icons8.com/ios-filled/24/FF69B4/instagram-new.png" alt="Instagram" />
-                    </a>
-                    <a href="mailto:support@yourservice.com">
+                <a href="https://www.linkedin.com/company/solutioneers-infotech" style="margin: 0 5px; display: inline-block;">
+                    <img src="https://img.icons8.com/color/48/000000/linkedin.png" alt="LinkedIn" style="width: 30px;" />
+                </a>
+                <a href="https://www.facebook.com/profile.php?id=61562639168028&ref=xav_ig_profile_web" style="margin: 0 5px; display: inline-block;">
+                    <img src="https://img.icons8.com/color/48/000000/facebook-new.png" alt="Facebook" style="width: 30px;" />
+                </a>
+                <a href="https://www.instagram.com/solutioneersinfotech" style="margin: 0 5px; display: inline-block;">
+                    <img src="https://img.icons8.com/color/48/000000/instagram-new.png" alt="Instagram" style="width: 30px;" />
+                </a>
+                <a href="https://solutioneersinfotech.in" style="margin: 0 5px; display: inline-block;">
+                    <img src="https://img.icons8.com/color/48/000000/domain.png" alt="Website" style="width: 30px;" />
+                </a>
+                 <a href="mailto:info@solutioneers.in">
                         <img src="https://img.icons8.com/ios-filled/24/FF69B4/support.png" alt="Support" />
                     </a>
                 </div>
@@ -214,6 +176,59 @@ const register = async (req, res) => {
     </div>
 `;
 
+
+// const html = `
+//         <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;">
+//             <div style="background-color: white; max-width: 600px; margin: 20px auto; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); transition: box-shadow 0.3s ease;">
+//                 <div style="background-color: rgb(255, 151, 5); padding: 15px; color: white; text-align: center; border-radius: 15px 15px 0 0; transition: background-color 0.3s ease;">
+//                     <h1 style="font-size: 28px; font-weight: bold;">Welcome to Our Service!</h1>
+//                 </div>
+//                 <div style="padding: 25px; background-color: rgba(247, 177, 79, 0.1); border-radius: 0 0 15px 15px;">
+//                     <h2 style="color: #333; font-size: 22px;">Hello, ${firstName} ${lastName}!</h2>
+//                     <p style="font-size: 16px; color: #555;">We are thrilled to have you on board. Thank you for registering with us!</p>
+//                     <p style="font-size: 16px; color: #555;">You can now start using all the services we offer. If you have any questions, feel free to reach out to our support team.</p>
+//                     <p style="font-size: 16px; color: #555;">We hope you have a great experience with us!</p>
+//                     <a href="https://solutioneersinfotech.in" 
+//                         style="display: inline-block; background-color: rgb(255, 151, 5); color: white; padding: 12px 18px; 
+//                         text-decoration: none; border-radius: 6px; font-size: 16px; margin-top: 20px; transition: background-color 0.3s ease;">
+//                         Visit Our Website
+//                     </a>
+//                     <p style="margin-top: 30px; font-size: 16px; color: #777;">Follow us on social media:</p>
+//                     <div style="text-align: center; margin-top: 15px;"> 
+//                         <a href="https://www.facebook.com/profile.php?id=61562639168028&ref=xav_ig_profile_web" 
+//                             style="margin-right: 15px; transition: transform 0.3s ease;">
+//                             <img src="https://img.icons8.com/ios-filled/30/FF69B4/facebook-new.png" alt="Facebook" style="filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));" />
+//                         </a>
+//                         <a href="https://www.instagram.com/solutioneersinfotech" 
+//                             style="margin-right: 15px; transition: transform 0.3s ease;">
+//                             <img src="https://img.icons8.com/ios-filled/30/FF69B4/instagram-new.png" alt="Instagram" style="filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));" />
+//                         </a>
+//                         <a href="mailto:info@solutioneers.in" style="margin-right: 15px; transition: transform 0.3s ease;">
+//                             <img src="https://img.icons8.com/ios-filled/30/FF69B4/support.png" alt="Support" style="filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));" />
+//                         </a>
+//                         <a href="https://www.linkedin.com/company/solutioneers-infotech" 
+//                             style="transition: transform 0.3s ease;">
+//                             <img src="https://img.icons8.com/ios-filled/30/FF69B4/linkedin.png" alt="LinkedIn" style="filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));" />
+//                         </a>
+//                     </div>
+//                     <div style="margin-top: 25px; text-align: center; color: #777; font-size: 12px;">
+//                         <p>&copy; 2024 Our Service. All Rights Reserved.</p>
+//                     </div>
+//                 </div>
+//             </div>
+//         </div>
+//         <style>
+//             div:hover {
+//                 box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+//             }
+//             a:hover {
+//                 background-color: rgb(255, 120, 5);
+//             }
+//             img:hover {
+//                 transform: scale(1.1);
+//             }
+//         </style>
+//     `;
          await sendMail(email, subject, ``, html);
         
 
@@ -230,7 +245,6 @@ const register = async (req, res) => {
         sendGeneralResponse(res, false, 'Internal server error', 500);
     }
 };
-
 
 
 // find user through token

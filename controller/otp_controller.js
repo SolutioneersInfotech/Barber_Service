@@ -1,9 +1,11 @@
 const Otp = require('../models/otp_model');
+const User = require('../models/User_model');
 const otpGenerator = require('otp-generator');
 const { sendGeneralResponse } = require('../utils/responseHelper');
 const { validatePhoneNumber, validateEmail } = require('../utils/validators');
 const { sendSMS } = require('../utils/sms');
 const { sendMail } = require('../utils/mailer');
+
 const bcrypt = require('bcrypt');
   const crypto = require('crypto');
   
@@ -26,7 +28,12 @@ const bcrypt = require('bcrypt');
 
   
       try {
-    
+         // Fetch the user details using the email
+         const user = await User.findOne( {email } );
+         if (!user) {
+             return sendGeneralResponse(res, false, 'User not found', 404);
+         }
+
         const otp = crypto.randomInt(100000, 999999).toString();
         const otpHash = await bcrypt.hash(otp, 10);
         const expiresAt = Date.now() + 15 * 60 * 1000;
@@ -46,28 +53,63 @@ const bcrypt = require('bcrypt');
         
 
 
-        const html = `
-        <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;">
-            <div style="background-color: white; max-width: 600px; margin: 20px auto; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-                <div style="background-color: rgb(255, 151, 5); padding: 10px; color: white; text-align: center; border-radius: 10px 10px 0 0;">
-                    <h1>Your OTP Code</h1>
-                </div>
-                <div style="padding: 20px; background-color: rgba(247, 177, 79, 0.25); border-radius: 10px;">
-                    <h2 style="color: #333;">Hello!</h2>
-                    <p style="color: #333;">Your One-Time Password (OTP) is:</p>
-                    <h1 style="font-size: 2em; color: rgb(255, 151, 5);">${otp}</h1>
-                    <p style="color: #333;">This OTP is valid for the next 15 minutes. Please enter it on the verification page to proceed.</p>
-                    <p style="color: #333;">If you did not request this OTP, please ignore this email.</p>
-                </div>
-                <div style="margin-top: 20px; text-align: center; color: #777; font-size: 12px;">
-                    <p>&copy; 2024 Bostelly Salon. All Rights Reserved.</p>
-                </div>
+          const html = `
+    <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;">
+    <div style="background-color: white; max-width: 600px; margin: 20px auto; padding: 20px; border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); text-align: center;">
+        
+        <!-- Header Section with OTP title -->
+        <div style="background-color: rgb(255, 151, 5); padding: 15px; color: white; border-radius: 12px 12px 0 0;">
+            <h1 style="font-size: 24px; font-weight: bold;">Your OTP Code</h1>
+        </div>
+        
+        <!-- Body Section with OTP and message -->
+        <div style="padding: 20px; background-color: rgba(247, 177, 79, 0.15);">
+            <h2 style="color: #333; font-size: 20px;">Hello, ${user.firstName}!</h2>
+            <p style="font-size: 15px; color: #555;">Your One-Time Password (OTP) is:</p>
+            <h1 style="font-size: 32px; color: rgb(255, 151, 5); letter-spacing: 2px;">${otp}</h1>
+            <p style="font-size: 14px; color: #555;">This OTP is valid for the next 15 minutes. Please enter it on the verification page to proceed.</p>
+            <p style="font-size: 14px; color: #555;">If you did not request this OTP, please ignore this email.</p>
+        </div>
+
+        <!-- Social Media Section -->
+        <div style="margin-top: 20px;">
+            <p style="color: #777; font-size: 14px;">Follow us:</p>
+            <div style="display: inline-block;">
+                <a href="https://www.linkedin.com/company/solutioneers-infotech" style="margin: 0 5px; display: inline-block;">
+                    <img src="https://img.icons8.com/color/48/000000/linkedin.png" alt="LinkedIn" style="width: 30px;" />
+                </a>
+                <a href="https://www.facebook.com/profile.php?id=61562639168028&ref=xav_ig_profile_web" style="margin: 0 5px; display: inline-block;">
+                    <img src="https://img.icons8.com/color/48/000000/facebook-new.png" alt="Facebook" style="width: 30px;" />
+                </a>
+                <a href="https://www.instagram.com/solutioneersinfotech" style="margin: 0 5px; display: inline-block;">
+                    <img src="https://img.icons8.com/color/48/000000/instagram-new.png" alt="Instagram" style="width: 30px;" />
+                </a>
+                <a href="https://solutioneersinfotech.in" style="margin: 0 5px; display: inline-block;">
+                    <img src="https://img.icons8.com/color/48/000000/domain.png" alt="Website" style="width: 30px;" />
+                </a>
+                 <a href="mailto:info@solutioneers.in">
+                        <img src="https://img.icons8.com/ios-filled/24/FF69B4/support.png" alt="Support" />
+                    </a>
             </div>
         </div>
+
+        <!-- Footer Section -->
+        <div style="margin-top: 20px; color: #777; font-size: 12px;">
+            <p>&copy; 2024 Salon. All Rights Reserved.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Style for email -->
+<style>
+    img:hover { transform: scale(1.1); }
+</style>
+
+
     `;
-    
   
-               await sendMail(email, subject, ``, html);
+            await sendMail(email, subject, ``, html);
   
   
            sendGeneralResponse(res, true, 'OTP sent to email', 200);

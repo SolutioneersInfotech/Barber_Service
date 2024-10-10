@@ -1,4 +1,4 @@
-const Customer = require('../models/cust_models')
+const Customer = require('../models/User_model')
 
 const create= async(req,res)=>{
     try {

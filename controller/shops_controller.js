@@ -23,10 +23,10 @@ const shopdetails = async (req, res) => {
                 select: '_id review customer likes rating createdAt',
                 populate: {
                     path: 'customer',
-                    select: 'fullName profilePic',
+                // Assuming the 'User' schema has a 'firstName' field
                 }
             })
-            .populate('services.subServices') // Populate subServices if they are references
+        //    .populate('services.subServices') // Populate subServices if they are references
             .exec();
 
         // If no shop is found
@@ -34,27 +34,33 @@ const shopdetails = async (req, res) => {
             return sendGeneralResponse(res, false, "Shop not found", 404);
         }
 
+        // Find reviews related to the shop and populate customer data
         const reviews = await Review.find({ shop: shopId })
-            .populate('customer', 'fullName profilePic')
+            .populate('customer', "firstName lastName profile_img") // Ensure customer is populated
             .exec();
 
+        // Aggregate reviews to count them
         const counts = await Review.aggregate([
             {
+                $match: { shop: new mongoose.Types.ObjectId(shopId) }, // Ensure shop field is used in aggregation
+            },
+            {
                 $group: {
-                    _id: "$shopId",   // Group by the field (e.g., shop ID)
-                    count: { $sum: 1 }  // Count the number of occurrences
+                    _id: "$shop", // Group by the shop field
+                    count: { $sum: 1 }, // Count the number of reviews
                 }
             },
             {
                 $project: {
-                    _id: 0,   // Exclude the _id field (i.e., shopId)
-                    count: 1   // Include only the count field
+                    _id: 0, // Exclude the _id field (i.e., shop)
+                    count: 1 // Include only the count field
                 }
             }
         ]);
 
         // Calculate total counts
-        const totalCounts = counts.reduce((total, item) => total + item.count, 0);
+        const totalCounts = counts.length > 0 ? counts[0].count : 0;
+
         // Construct the response data
         const shopData = {
             images: shop.shop_images || [],
@@ -84,13 +90,11 @@ const shopdetails = async (req, res) => {
                     img: subService.img
                 })),
             })),
-            // Corrected packages section
             packages: shop.services.map(service => ({
                 serviceName: service.serviceName,
                 description: service.description || "No Special offer",
                 rate: service.rate
             })),
-            // Booknow section with corrected subService mapping
             booknow: shop.services.map(service => ({
                 Shop_Name: shop.name,
                 ServiceName: service.serviceName,
@@ -99,32 +103,24 @@ const shopdetails = async (req, res) => {
                     SubServiceName: subService.subServiceName,
                 }))
             })),
-            // // Fetch related data
-
             reviews: reviews.map(review => ({
                 id: review._id,
-                customer: {
-                    fullName: review.customer.fullName,
-                    profilePic: review.customer.profilePic
-                },
+                customer: review.customer ,
                 rating: review.rating,
                 review: review.review,
                 likes: review.likes,
                 createdAt: review.createdAt
             })),
-
             gallery: shop.gallery || [],
         };
 
+        // Send the successful response
         return sendGeneralResponse(res, true, 'Shop details fetched successfully', 200, shopData);
     } catch (error) {
+        // Catch any errors and respond
         return sendGeneralResponse(res, false, 'Error fetching shop details', 500, error.message);
     }
 };
-
-
-
-
 
 
 module.exports = { shopdetails };

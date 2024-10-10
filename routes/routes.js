@@ -25,7 +25,7 @@ router.post("/sendPhoneOtp", sendPhoneOtp);
 
 // find user through device token
 router.get('/finduser', finduser); 
-router.put('/update_device_token', updateDeviceToken);  
+ 
 
 
 // get shops
