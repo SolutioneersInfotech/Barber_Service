@@ -25,8 +25,6 @@ router.post("/verifyEmailOtp", verifyEmailOtp);
 router.post("/sendPhoneOtp", sendPhoneOtp);
 
 
-
-
 router.get('/finduser', finduser); 
 router.get('/getAdds', getAdds); 
 router.post('/getNewAccessToken', getAccessToken); 
@@ -48,9 +46,6 @@ router.delete('/bookmark/:shopId', removeBookmark);
 
 // Route to get all bookmarked shops
 router.get('/bookmark', getBookmarkedShops);
-
-
-
  
  
 // Protected profile route

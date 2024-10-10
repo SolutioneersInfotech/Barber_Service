@@ -4,10 +4,11 @@ const dotenv = require('dotenv');
 const connectDB = require('./utils/db');
 const errorHandler = require('./middleware/errorhandling');
 
+
 //routes
- 
+const chats = require('./routes/message')
 const authRoutes = require('./routes/routes');
- 
+const payment= require('./routes/payment') 
 const userInfoRoutes = require('./routes/Info_user_route');
 const bookingRoute=require('./routes/booking_route')
 
@@ -52,6 +53,8 @@ app.get('', (req, res) => {
  
   
 app.use('', authRoutes);
+app.use('/chats', chats);
+app.use('/payment', payment);
   app.use('/users', userInfoRoutes);
  app.use('/bookings', bookingRoute );    // booking is in build 
 

@@ -89,9 +89,9 @@
 
 // module.exports = User;
 
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const { Schema } = mongoose;
-const jwt = require('jsonwebtoken');
+// const jwt = require('jsonwebtoken');
 
 // User schema
 const userSchema = new Schema({
